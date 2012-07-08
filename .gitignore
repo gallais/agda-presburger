@@ -1,0 +1,5 @@
+# compiled agda
+*.agdai
+
+# emacs backup
+*~
