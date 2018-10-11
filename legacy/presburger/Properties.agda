@@ -10,6 +10,7 @@ open import Data.Vec
 
 open import Data.Integer.Divisibility
 
+open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
 
 open import Representation
@@ -24,15 +25,35 @@ data _≠0 : ℤ → Set where
   +[1+_] : ∀ k → + (ℕ.suc k) ≠0
   -[1+_] : ∀ k → -[1+ k ] ≠0
 
-≠0-abs : ∀ {k : ℤ} → k ≠0 → + ∣ k ∣ ≠0
-≠0-abs +[1+ k ] = +[1+ k ]
-≠0-abs -[1+ k ] = +[1+ k ]
+infix 3 _≠0?
+_≠0? : ∀ k → (k ≡ + 0) ⊎ (k ≠0)
++ zero    ≠0? = inj₁ refl
++ ℕ.suc n ≠0? = inj₂ +[1+ n ]
+-[1+ n ]  ≠0? = inj₂ -[1+ n ]
+
+toℤ : ∀ {k} → k ≠0 → ℤ
+toℤ {k} _ = k
+
+[_*_≠0] : ∀ {k l} → k ≠0 → l ≠0 → k ℤ.* l ≠0
+[ +[1+ k ] * +[1+ l ] ≠0] = +[1+ l ℕ.+ k ℕ.* ℕ.suc l ]
+[ +[1+ k ] * -[1+ l ] ≠0] = -[1+ l ℕ.+ k ℕ.* ℕ.suc l ]
+[ -[1+ k ] * +[1+ l ] ≠0] = -[1+ l ℕ.+ k ℕ.* ℕ.suc l ]
+[ -[1+ k ] * -[1+ l ] ≠0] = +[1+ l ℕ.+ k ℕ.* ℕ.suc l ]
+
+infix 3 [-_≠0]
+[-_≠0] : ∀ {k} → k ≠0 → - k ≠0
+[- +[1+ k ] ≠0] = -[1+ k ]
+[- -[1+ k ] ≠0] = +[1+ k ]
+
+[∣_∣≠0] : ∀ {k} → k ≠0 → + ∣ k ∣ ≠0
+[∣ +[1+ k ] ∣≠0] = +[1+ k ]
+[∣ -[1+ k ] ∣≠0] = +[1+ k ]
 
 Notnull : Set
 Notnull = Σ ℤ _≠0
 
 ∣_∣≠0 : Notnull → Notnull
-∣ σ , Hσ ∣≠0 = + ∣ σ ∣ , ≠0-abs Hσ
+∣ σ , Hσ ∣≠0 = + ∣ σ ∣ , [∣ Hσ ∣≠0]
 
 :0 : {n : ℕ} → exp n
 :0 {n} = val {n} (+ 0)
