@@ -7,8 +7,8 @@ open import Data.Fin as F
 open import Data.Empty
 open import Data.Product
 
-open import Data.Nat.Divisibility as Div renaming (_∣_ to _ℕdiv_)
-open import Data.Integer.Divisibility renaming (_∣_ to _ℤdiv_)
+import Data.Nat.Divisibility as Div
+open import Data.Integer.Divisibility
 
 open import Relation.Binary.PropositionalEquality
 
@@ -57,9 +57,9 @@ abstract
     where prf′ = ≤-trans p₂≤p₁ prf
 
   Unit-Lin-E : ∀ {n} {e : exp n} → Unit-E e → Lin-E 0 e
-  Unit-Lin-E (val k)      = val k
-  Unit-Lin-E (varn p + e) = Lin-E^wk z≤n e
-  Unit-Lin-E (k *var0+ e) = Unit-≠0 k *var zero [ z≤n ]+ e
+  Unit-Lin-E (val k)             = val k
+  Unit-Lin-E (varn p + e)        = Lin-E^wk z≤n e
+  Unit-Lin-E (k [ prf ]*var0+ e) = Unit-≠0 prf *var zero [ z≤n ]+ e
 
   Lin-Unit-E : ∀ {n p} {e : exp n} → Lin-E (ℕ.suc p) e → Unit-E e
   Lin-Unit-E (val k)               = val k
@@ -96,12 +96,12 @@ abstract
 -----
 
   infixl 2 _∣-Div-E_
-  _∣-Div-E_ : ∀ {n σ τ e} → (proj₁ σ) ℤdiv (proj₁ τ) → Div-E σ {n} e → Div-E τ e
-  σ∣τ ∣-Div-E val k        = val k
-  σ∣τ ∣-Div-E c*varn p + e = c*varn p + e
-  σ∣τ ∣-Div-E k *var0+ e   = Pos.trans k σ∣τ *var0+ e
+  _∣-Div-E_ : ∀ {n σ τ e} → (proj₁ σ) ∣ (proj₁ τ) → Div-E σ {n} e → Div-E τ e
+  σ∣τ ∣-Div-E val k             = val k
+  σ∣τ ∣-Div-E c*varn p + e      = c*varn p + e
+  σ∣τ ∣-Div-E k [ k∣σ ]*var0+ e = k [ Pos.trans k∣σ σ∣τ ]*var0+ e
 
-  _∣-Div_ : ∀ {n σ τ φ} → (proj₁ σ) ℤdiv (proj₁ τ) → Div {n} σ φ → Div τ φ
+  _∣-Div_ : ∀ {n σ τ φ} → (proj₁ σ) ∣ (proj₁ τ) → Div {n} σ φ → Div τ φ
   σ∣τ ∣-Div T        = T
   σ∣τ ∣-Div F        = F
   σ∣τ ∣-Div (e :≤0)  = (σ∣τ ∣-Div-E e) :≤0
@@ -112,7 +112,7 @@ abstract
   σ∣τ ∣-Div (p :∧ q) = (σ∣τ ∣-Div p) :∧ (σ∣τ ∣-Div q)
   σ∣τ ∣-Div (p :∨ q) = (σ∣τ ∣-Div p) :∨ (σ∣τ ∣-Div q)
 
-  _∣-All∣_ : ∀ {n σ τ φ} → (proj₁ σ) ℤdiv (proj₁ τ) → All∣ {n} σ φ → All∣ τ φ
+  _∣-All∣_ : ∀ {n σ τ φ} → (proj₁ σ) ∣ (proj₁ τ) → All∣ {n} σ φ → All∣ τ φ
   σ∣τ ∣-All∣ T               = T
   σ∣τ ∣-All∣ F               = F
   σ∣τ ∣-All∣ (t :≤0)         = t :≤0
