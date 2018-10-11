@@ -4,7 +4,7 @@ open import Data.Nat as ℕ
 open import Data.Integer as ℤ
 open import Data.Fin as F
 open import Data.Empty
-open import Product
+open import Data.Product
 open import Data.Sum
 open import Data.Vec
 
@@ -31,8 +31,8 @@ data _≠0 : ℤ → Set where
 Notnull : Set
 Notnull = Σ ℤ _≠0
 
-∣_∣≠ : Notnull → Notnull
-∣ σ , Hσ ∣≠ = + ∣ σ ∣ , ≠0-abs Hσ
+∣_∣≠0 : Notnull → Notnull
+∣ σ , Hσ ∣≠0 = + ∣ σ ∣ , ≠0-abs Hσ
 
 :0 : {n : ℕ} → exp n
 :0 {n} = val {n} (+ 0)
@@ -119,10 +119,10 @@ data Div {n : ℕ} (σ : Notnull) : form n → Set where
 -----
 
 data Unit-E : {n : ℕ} → exp n → Set where
-  val    : ∀ {n} k → Unit-E {n} (val k)
-  varn_+ : ∀ {n} {t : exp n} (p : ℕ) → Lin-E (ℕ.suc p) t → Unit-E t
-  var0   : ∀ {n} {t : exp (ℕ.suc n)} {k} (k1 : ∣ k ∣ ≡ 1) (pr : Lin-E 1 t) →
-                Unit-E ((k :* (var zero)) :+ t)
+  val      : ∀ {n} k → Unit-E {n} (val k)
+  varn_+_  : ∀ {n} {t : exp n} (p : ℕ) → Lin-E (ℕ.suc p) t → Unit-E t
+  _*var0+_ : ∀ {n t} {k} → ∣ k ∣ ≡ 1 → Lin-E {ℕ.suc n} 1 t →
+             Unit-E ((k :* (var zero)) :+ t)
 
 data Unit {n : ℕ} : form n → Set where
   T    : Unit T
@@ -175,12 +175,12 @@ data Free0 {n : ℕ} : form n → Set where
 -----
 
 data All∣ {n : ℕ} (σ : Notnull) : form n → Set where
-  T    : All∣ σ T
-  F    : All∣ σ F
-  _:≤0 : ∀ {t} → All∣ σ (t :≤ :0)
-  _:≡0 : ∀ {t} → All∣ σ (t :≡ :0)
-  _:≢0 : ∀ {t} → All∣ σ (:¬ (t :≡ :0))
-  _:|_ : ∀ {k t} → k ≠0 → k ∣ (proj₁ σ) → All∣ σ (k :| t)
-  _:|̸_ : ∀ {k t} → k ≠0 → k ∣ (proj₁ σ) → All∣ σ (:¬ (k :| t))
-  _:∧_ : ∀ {φ₁ φ₂} → All∣ σ φ₁ → All∣ σ φ₂ → All∣ σ (φ₁ :∧ φ₂)
-  _:∨_ : ∀ {φ₁ φ₂} → All∣ σ φ₁ → All∣ σ φ₂ → All∣ σ (φ₁ :∨ φ₂)
+  T       : All∣ σ T
+  F       : All∣ σ F
+  _:≤0    : ∀ t → All∣ σ (t :≤ :0)
+  _:≡0    : ∀ t → All∣ σ (t :≡ :0)
+  _:≢0    : ∀ t → All∣ σ (:¬ (t :≡ :0))
+  _[_]:|_ : ∀ {k} → k ∣ (proj₁ σ) → k ≠0 → ∀ t → All∣ σ (k :| t)
+  _[_]:|̸_ : ∀ {k} → k ∣ (proj₁ σ) → k ≠0 → ∀ t → All∣ σ (:¬ (k :| t))
+  _:∧_    : ∀ {φ₁ φ₂} → All∣ σ φ₁ → All∣ σ φ₂ → All∣ σ (φ₁ :∧ φ₂)
+  _:∨_    : ∀ {φ₁ φ₂} → All∣ σ φ₁ → All∣ σ φ₂ → All∣ σ (φ₁ :∨ φ₂)
