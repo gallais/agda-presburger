@@ -3,7 +3,7 @@ module Normalization.Negation where
 open import Representation
 open import Properties
 
-open import Product
+open import Data.Product
 open import Data.Nat
 open import Data.Integer
 open import Data.Fin
@@ -23,32 +23,30 @@ open import Data.Fin
    [nnf φ] turns a quantifier free formula into a formula in
    negation normal form. -}
 
-neg : ∀ {n} (φ : Nnf n) → Nnf n
-neg (.T , T-isnnf) = F , F-isnnf
-neg (.F , F-isnnf) = T , T-isnnf
-neg (.(t₁ :≤ t₂) , :≤-isnnf {t₁} {t₂}) = (:1 :+ t₁) :≤ t₂ , :≤-isnnf
-neg (.(t₁ :≡ t₂) , :≡-isnnf {t₁} {t₂}) = :¬ (t₁ :≡ t₂) , :≢-isnnf
-neg (.(:¬ (t₁ :≡ t₂)) , :≢-isnnf {t₁} {t₂}) = t₁ :≡ t₂ , :≡-isnnf
-neg (.(k :| t₁) , :|-isnnf {k} {t₁}) = :¬ (k :| t₁) , :|̸-isnnf
-neg (.(:¬ (k :| t₁)) , :|̸-isnnf {k} {t₁}) = k :| t₁ , :|-isnnf
-neg (.(φ₁ :∧ φ₂) , :∧-isnnf {φ₁} {φ₂} pr₁ pr₂) with neg (φ₁ , pr₁) | neg (φ₂ , pr₂)
-... | ψ₁ , Hψ₁ | ψ₂ , Hψ₂ = ψ₁ :∨ ψ₂ , :∨-isnnf Hψ₁ Hψ₂
-neg (.(φ₁ :∨ φ₂) , :∨-isnnf {φ₁} {φ₂} pr₁ pr₂) with neg (φ₁ , pr₁) | neg (φ₂ , pr₂)
-... | ψ₁ , Hψ₁ | ψ₂ , Hψ₂ = ψ₁ :∧ ψ₂ , :∧-isnnf Hψ₁ Hψ₂
 
-nnf : ∀ {n} (φ : Qfree n) → Nnf n
-nnf (.T , T-isqfree) = T , T-isnnf
-nnf (.F , F-isqfree) = F , F-isnnf
-nnf (.(t₁ :< t₂) , :<-isqfree {t₁} {t₂}) = (:1 :+ t₁) :≤ t₂ , :≤-isnnf
-nnf (.(t₁ :> t₂) , :>-isqfree {t₁} {t₂}) = (:1 :+ t₂) :≤ t₁ , :≤-isnnf
-nnf (.(t₁ :≤ t₂) , :≤-isqfree {t₁} {t₂}) = t₁ :≤ t₂ , :≤-isnnf
-nnf (.(t₁ :≥ t₂) , :≥-isqfree {t₁} {t₂}) = t₂ :≤ t₁ , :≤-isnnf
-nnf (.(t₁ :≡ t₂) , :≡-isqfree {t₁} {t₂}) = t₁ :≡ t₂ , :≡-isnnf
-nnf (.(k :| t₁) , :|-isqfree {k} {t₁}) = k :| t₁ , :|-isnnf
-nnf (.(:¬ φ) , :¬-isqfree {φ} pr) = neg (nnf (φ , pr))
-nnf (.(φ₁ :∧ φ₂) , :∧-isqfree {φ₁} {φ₂} pr₁ pr₂) with nnf (φ₁ , pr₁) | nnf (φ₂ , pr₂)
-... | ψ₁ , Hψ₁ | ψ₂ , HΨ₂ = ψ₁ :∧ ψ₂ , :∧-isnnf Hψ₁ HΨ₂
-nnf (.(φ₁ :∨ φ₂) , :∨-isqfree {φ₁} {φ₂} pr₁ pr₂) with nnf (φ₁ , pr₁) | nnf (φ₂ , pr₂)
-... | ψ₁ , Hψ₁ | ψ₂ , HΨ₂ = ψ₁ :∨ ψ₂ , :∨-isnnf Hψ₁ HΨ₂
-nnf (.(φ₁ :→ φ₂) , :→-isqfree {φ₁} {φ₂} pr₁ pr₂) with neg (nnf (φ₁ , pr₁)) | nnf (φ₂ , pr₂)
-... | ψ₁ , Hψ₁ | ψ₂ , HΨ₂ = ψ₁ :∨ ψ₂ , :∨-isnnf Hψ₁ HΨ₂
+infix 3 ¬_
+
+¬_ : ∀ {n φ} → NNF {n} φ → ∃ (NNF {n})
+¬ T          = -, F
+¬ F          = -, T
+¬ (t₁ :≤ t₂) = -, ((:1 :+ t₂) :≤ t₁)
+¬ (t₁ :≡ t₂) = -, (t₁ :≢ t₂)
+¬ (t₁ :≢ t₂) = -, t₁ :≡ t₂
+¬ (k :| t)   = -, k :|̸ t
+¬ (k :|̸ t)   = -, k :| t
+¬ (p :∧ q)   = -, proj₂ (¬ p) :∨ proj₂ (¬ q)
+¬ (p :∨ q)   = -, proj₂ (¬ p) :∧ proj₂ (¬ q)
+
+nnf : ∀ {n φ} → QFree {n} φ → ∃ (NNF {n})
+nnf T          = -, T
+nnf F          = -, F
+nnf (t₁ :< t₂) = -, (:1 :+ t₁ :≤ t₂)
+nnf (t₁ :> t₂) = -, (:1 :+ t₂ :≤ t₁)
+nnf (t₁ :≤ t₂) = -, t₁ :≤ t₂
+nnf (t₁ :≥ t₂) = -, t₂ :≤ t₁
+nnf (t₁ :≡ t₂) = -, t₁ :≡ t₂
+nnf (k :| t)   = -, k :| t
+nnf (:¬ p)     = ¬ proj₂ (nnf p)
+nnf (p :∧ q)   = -, proj₂ (nnf p) :∧ proj₂ (nnf q)
+nnf (p :∨ q)   = -, proj₂ (nnf p) :∨ proj₂ (nnf q)
+nnf (p :→ q)   = -, (proj₂ (¬ proj₂ (nnf p))) :∨ proj₂ (nnf q)
