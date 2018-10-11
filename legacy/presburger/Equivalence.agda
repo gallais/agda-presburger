@@ -55,8 +55,12 @@ proj₂ (deMorgan-→ Q?) = [ flip contradiction , const ]′
 _⇒_ : ∀ {n}(φ₁ φ₂ : form n) → Set
 φ₁ ⇒ φ₂ = ∀ ρ → ⟦ φ₁ ⟧ ρ → ⟦ φ₂ ⟧ ρ
 
+
 _⇔_ : ∀ {n}(φ₁ φ₂ : form n) → Set
 φ₁ ⇔ φ₂ = ∀ ρ → ⟦ φ₁ ⟧ ρ ↔ ⟦ φ₂ ⟧ ρ
+
+_⇔e_ : ∀ {n} (e f : exp n) → Set
+e ⇔e f = ∀ ρ → ⟦ e ⟧e ρ ≡ ⟦ f ⟧e ρ
 
 _⇐_ : ∀ {n}(φ₁ φ₂ : form n) → Set
 _⇐_ = flip _⇒_

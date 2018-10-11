@@ -92,6 +92,9 @@ Notnull = Σ ℤ _≠0
 -- Erasure functions
 ----
 
+toExp :  ∀ (P : ∀ {n} → exp n → Set) {n e} → P {n} e → exp n
+toExp _ {e = e} _ = e
+
 toForm : ∀ (P : ∀ {n} → form n → Set) {n φ} → P {n} φ → form n
 toForm _ {φ = φ} _ = φ
 

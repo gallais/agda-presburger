@@ -29,6 +29,12 @@ infix 3 -E_
 -E val k                 = -, val (ℤ.- k)
 -E (k *var p [ prf ]+ e) = -, [- k ≠0] *var p [ prf ]+ proj₂ (-E e)
 
+val_*var_[_]+E_ : ∀ {n n₀ e} (k : ℤ) (p : Fin n) → n₀ ℕ.≤ Fin.toℕ p →
+                  Lin-E {n} (ℕ.suc (Fin.toℕ p)) e → ∃ (Lin-E {n} n₀)
+val k *var p [ prf ]+E e with k ≠0?
+... | inj₁ k≡0 = -, Lin-E^wk (NProp.≤-step prf) e
+... | inj₂ k≠0 = -, k≠0 *var p [ prf ]+ e
+
 infixr 4 _+E_
 _+E_ : ∀ {n n₀ e f} → Lin-E {n} n₀ e → Lin-E {n} n₀ f → ∃ (Lin-E {n} n₀)
 val k               +E val l                = -, val (k ℤ.+ l)
@@ -39,9 +45,7 @@ k *var p [ prf ]+ e +E l *var q [ prf' ]+ f with Fcompare p q
   where p<q' = subst (_ ℕ.<_) (toℕ-inject₁ _) p<q
 ... | greater p>q = -, l *var q [ prf' ]+ proj₂ (k *var p [ p>q' ]+ e +E f)
   where p>q' = subst (_ ℕ.<_) (toℕ-inject₁ _) p>q
-... | equal   refl with (toℤ k ℤ.+ toℤ l) ≠0?
-... | inj₁ k+l≡0 = Prod.map₂ (Lin-E^wk (NProp.≤-trans prf (NProp.n≤1+n _))) (e +E f)
-... | inj₂ k+l≠0 = -, k+l≠0 *var p [ prf ]+ proj₂ (e +E f)
+... | equal refl = val (toℤ k ℤ.+ toℤ l) *var p [ prf ]+E (proj₂ (e +E f))
 
 _≠0*E_ : ∀ {n n₀ e k} → k ≠0 → Lin-E {n} n₀ e → ∃ (Lin-E {n} n₀)
 k ≠0*E val l                 = -, val (toℤ k ℤ.* l)
