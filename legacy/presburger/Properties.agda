@@ -1,7 +1,7 @@
 module Properties where
 
 open import Data.Nat as ℕ
-open import Data.Integer as ℤ 
+open import Data.Integer as ℤ
 open import Data.Fin as F
 open import Data.Empty
 open import Product
@@ -19,15 +19,17 @@ open import Comparisons
 -- Notations
 -----
 
-≠0 : ℤ → Set
-≠0 k = k ≡ + 0 → ⊥
+infix 3 _≠0
+data _≠0 : ℤ → Set where
+  +[1+_] : ∀ k → + (ℕ.suc k) ≠0
+  -[1+_] : ∀ k → -[1+ k ] ≠0
 
-≠0-abs : ∀ {k : ℤ} → ≠0 k → ≠0 (+ ∣ k ∣)
-≠0-abs {+ .0} pr refl = pr refl
-≠0-abs { -[1+ n ]} pr ()
+≠0-abs : ∀ {k : ℤ} → k ≠0 → + ∣ k ∣ ≠0
+≠0-abs +[1+ k ] = +[1+ k ]
+≠0-abs -[1+ k ] = +[1+ k ]
 
 Notnull : Set
-Notnull = Σ ℤ ≠0
+Notnull = Σ ℤ _≠0
 
 ∣_∣≠ : Notnull → Notnull
 ∣ σ , Hσ ∣≠ = + ∣ σ ∣ , ≠0-abs Hσ
@@ -42,170 +44,143 @@ Notnull = Σ ℤ ≠0
 -- To be quantifier free
 -----
 
-data isqfree {n : ℕ} : form n → Set where
-  T-isqfree : isqfree T
-  F-isqfree : isqfree F
-  :<-isqfree : ∀ {t₁ t₂ : exp n} → isqfree (t₁ :< t₂)
-  :>-isqfree : ∀ {t₁ t₂ : exp n} → isqfree (t₁ :> t₂)
-  :≤-isqfree : ∀ {t₁ t₂ : exp n} → isqfree (t₁ :≤ t₂)
-  :≥-isqfree : ∀ {t₁ t₂ : exp n} → isqfree (t₁ :≥ t₂)
-  :≡-isqfree : ∀ {t₁ t₂ : exp n} → isqfree (t₁ :≡ t₂)
-  :|-isqfree : ∀ {k : ℤ} {t₁ : exp n} → isqfree (k :| t₁)
-  :¬-isqfree : ∀ {φ : form n} (pr : isqfree φ) → isqfree (:¬ φ)
-  :∧-isqfree : ∀ {φ₁ φ₂ : form n} (pr₁ : isqfree φ₁) (pr₂ : isqfree φ₂) → isqfree (φ₁ :∧ φ₂)
-  :∨-isqfree : ∀ {φ₁ φ₂ : form n} (pr₁ : isqfree φ₁) (pr₂ : isqfree φ₂) → isqfree (φ₁ :∨ φ₂)
-  :→-isqfree : ∀ {φ₁ φ₂ : form n} (pr₁ : isqfree φ₁) (pr₂ : isqfree φ₂) → isqfree (φ₁ :→ φ₂)
+data QFree {n : ℕ} : form n → Set where
+  T : QFree T
+  F : QFree F
+  _:<_ : (t₁ t₂ : exp n) → QFree (t₁ :< t₂)
+  _:>_ : (t₁ t₂ : exp n) → QFree (t₁ :> t₂)
+  _:≤_ : (t₁ t₂ : exp n) → QFree (t₁ :≤ t₂)
+  _:≥_ : (t₁ t₂ : exp n) → QFree (t₁ :≥ t₂)
+  _:≡_ : (t₁ t₂ : exp n) → QFree (t₁ :≡ t₂)
+  _:|_ : (k : ℤ) (t : exp n) → QFree (k :| t)
+  :¬_  : {φ : form n} → QFree φ → QFree (:¬ φ)
+  _:∧_ : {φ₁ φ₂ : form n} → QFree φ₁ → QFree φ₂ → QFree (φ₁ :∧ φ₂)
+  _:∨_ : {φ₁ φ₂ : form n} → QFree φ₁ → QFree φ₂ → QFree (φ₁ :∨ φ₂)
+  _:→_ : {φ₁ φ₂ : form n} → QFree φ₁ → QFree φ₂ → QFree (φ₁ :→ φ₂)
 
 -----
 -- To be in negation normal form
 -----
 
-data isnnf {n : ℕ} : form n → Set where
-  T-isnnf : isnnf (T {n})
-  F-isnnf : isnnf (F {n})
-  :≤-isnnf : ∀ {t₁ t₂ : exp n} → isnnf (t₁ :≤ t₂)
-  :≡-isnnf : ∀ {t₁ t₂ : exp n} → isnnf (t₁ :≡ t₂)
-  :≢-isnnf : ∀ {t₁ t₂ : exp n} → isnnf (:¬ (t₁ :≡ t₂))
-  :|-isnnf : ∀ {k : ℤ} {t₁ : exp n} → isnnf (k :| t₁)
-  :|̸-isnnf : ∀ {k : ℤ} {t₁ : exp n} → isnnf (:¬ (k :| t₁))
-  :∧-isnnf : ∀ {φ₁ φ₂ : form n} (pr₁ : isnnf φ₁) (pr₂ : isnnf φ₂) → isnnf (φ₁ :∧ φ₂)
-  :∨-isnnf : ∀ {φ₁ φ₂ : form n} (pr₁ : isnnf φ₁) (pr₂ : isnnf φ₂) → isnnf (φ₁ :∨ φ₂)
+data NNF {n : ℕ} : form n → Set where
+  T    : NNF (T {n})
+  F    : NNF (F {n})
+  _:≤_ : (t₁ t₂ : exp n) → NNF (t₁ :≤ t₂)
+  _:≡_ : (t₁ t₂ : exp n) → NNF (t₁ :≡ t₂)
+  _:≢_ : (t₁ t₂ : exp n) → NNF (:¬ (t₁ :≡ t₂))
+  _:|_ : (k : ℤ) (t : exp n) → NNF (k :| t)
+  _:|̸_ : (k : ℤ) (t : exp n) → NNF (:¬ (k :| t))
+  _:∧_ : {φ₁ φ₂ : form n} → NNF φ₁ → NNF φ₂ → NNF (φ₁ :∧ φ₂)
+  _:∨_ : {φ₁ φ₂ : form n} → NNF φ₁ → NNF φ₂ → NNF (φ₁ :∨ φ₂)
 
 -----
 -- To be linear
 -----
 
-data islinn-i {n : ℕ} : ∀ (n₀ : ℕ) (e : exp n) → Set where
-  val-islinn-i : ∀ {n₀} {k : ℤ} → islinn-i n₀ (val {n} k)
-  var-islinn-i : ∀ {n₀} {k : ℤ} {p : Fin n} {r : exp n} (k≠0 : ≠0 k)
-                 (n₀≤p : n₀ ℕ.≤ toℕ p) (pr : islinn-i (ℕ.suc (toℕ p)) r) →
-                  islinn-i n₀ ((k :* var p) :+  r)
+data Lin-E {n : ℕ} (n₀ : ℕ) : exp n → Set where
+  val         : (k : ℤ) → Lin-E n₀ (val k)
+  _*var_[_]+_ : {k : ℤ} → k ≠0 → (p : Fin n) {r : exp n} →
+                n₀ ℕ.≤ toℕ p → Lin-E (ℕ.suc (toℕ p)) r → Lin-E n₀ ((k :* var p) :+  r)
 
-data islin {n : ℕ} : form n → Set where
-  T-islin : islin T
-  F-islin : islin F
-  :≤-islin : ∀ {t₁ : exp n} (pr : islinn-i zero t₁) → islin (t₁ :≤ :0)
-  :≡-islin : ∀ {t₁ : exp n} (pr : islinn-i zero t₁) → islin (t₁ :≡ :0)
-  :≢-islin : ∀ {t₁ : exp n} (pr : islinn-i zero t₁) → islin (:¬ (t₁ :≡ :0))
-  :|-islin : ∀ {k} {t₁ : exp n} (k≠0 : ≠0 k) (pr : islinn-i zero t₁) → islin (k :| t₁)
-  :|̸-islin : ∀ {k} {t₁ : exp n} (k≠0 : ≠0 k) (pr : islinn-i zero t₁) → islin (:¬ (k :| t₁))
-  :∧-islin : ∀ {φ₁ φ₂ : form n} (pr₁ : islin φ₁) (pr₂ : islin φ₂) → islin (φ₁ :∧ φ₂)
-  :∨-islin : ∀ {φ₁ φ₂ : form n} (pr₁ : islin φ₁) (pr₂ : islin φ₂) → islin (φ₁ :∨ φ₂)
+data Lin {n : ℕ} : form n → Set where
+  T    : Lin T
+  F    : Lin F
+  _:≤0 : ∀ {t} → Lin-E zero t → Lin (t :≤ :0)
+  _:≡0 : ∀ {t} → Lin-E zero t → Lin (t :≡ :0)
+  _:≢0 : ∀ {t} → Lin-E zero t → Lin (:¬ (t :≡ :0))
+  _:|_ : ∀ {k t} → k ≠0 → Lin-E zero t → Lin (k :| t)
+  _:|̸_ : ∀ {k t} → k ≠0 → Lin-E zero t → Lin (:¬ (k :| t))
+  _:∧_ : {φ₁ φ₂ : form n} → Lin φ₁ → Lin φ₂ → Lin (φ₁ :∧ φ₂)
+  _:∨_ : {φ₁ φ₂ : form n} → Lin φ₁ → Lin φ₂ → Lin (φ₁ :∨ φ₂)
+
+-----
+-- All of var0's coefficients are divisible by σ
+-----
+
+data Div-E (σ : Notnull) : {n : ℕ} → exp n → Set where
+  val       : ∀ {n} k → Div-E σ {n} (val k)
+  c*varn_+_ : ∀ {n} {t : exp n} (p : ℕ) → Lin-E (ℕ.suc p) t → Div-E σ t
+  _*var0+_  : ∀ {n} {t : exp (ℕ.suc n)} {k : ℤ} → k ∣ (proj₁ σ) → Lin-E 1 t →
+              Div-E σ ((k :* var zero) :+ t)
+
+data Div {n : ℕ} (σ : Notnull) : form n → Set where
+  T    : Div σ T
+  F    : Div σ F
+  _:≤0 : ∀ {t} → Div-E σ t → Div σ (t :≤ :0)
+  _:≡0 : ∀ {t} → Div-E σ t → Div σ (t :≡ :0)
+  _:≢0 : ∀ {t} → Div-E σ t → Div σ (:¬ (t :≡ :0))
+  _:|_ : ∀ {k t} → k ≠0 → Div-E σ t → Div σ (k :| t)
+  _:|̸_ : ∀ {k t} → k ≠0 → Div-E σ t → Div σ (:¬ (k :| t))
+  _:∧_ : ∀ {φ₁ φ₂} → Div σ φ₁ → Div σ φ₂ → Div σ (φ₁ :∧ φ₂)
+  _:∨_ : ∀ {φ₁ φ₂} → Div σ φ₁ → Div σ φ₂ → Div σ (φ₁ :∨ φ₂)
 
 -----
 -- To be unitary
 -----
 
-data div-exp   : ∀ {n : ℕ} (σ : Notnull) (e : exp n) → Set where
-  val-div-exp  : ∀ {n k σ} → div-exp {n} σ (val k)
-  varn-div-exp : ∀ {n σ} {t : exp n} {p : ℕ} (pr : islinn-i (ℕ.suc p) t) → div-exp σ t
-  var0-div-exp : ∀ {n σ} {t : exp (ℕ.suc n)} {k} (k∣ : k ∣ (proj₁ σ)) (pr : islinn-i 1 t) →
-                 div-exp σ ((k :* (var zero)) :+ t)
+data Unit-E : {n : ℕ} → exp n → Set where
+  val    : ∀ {n} k → Unit-E {n} (val k)
+  varn_+ : ∀ {n} {t : exp n} (p : ℕ) → Lin-E (ℕ.suc p) t → Unit-E t
+  var0   : ∀ {n} {t : exp (ℕ.suc n)} {k} (k1 : ∣ k ∣ ≡ 1) (pr : Lin-E 1 t) →
+                Unit-E ((k :* (var zero)) :+ t)
 
-data divall {n : ℕ} (σ : Notnull) : form n → Set where
-  T-divall : divall σ T
-  F-divall : divall σ F
-  :≤-divall : ∀ {t₁ : exp n} (pr : div-exp σ t₁) → divall σ (t₁ :≤ :0)
-  :≡-divall : ∀ {t₁ : exp n} (pr : div-exp σ t₁) → divall σ (t₁ :≡ :0)
-  :≢-divall : ∀ {t₁ : exp n} (pr : div-exp σ t₁) → divall σ (:¬ (t₁ :≡ :0))
-  :|-divall : ∀ {k} {t₁ : exp n} (k≠0 : ≠0 k) (pr : div-exp σ t₁) → divall σ (k :| t₁)
-  :|̸-divall : ∀ {k} {t₁ : exp n} (k≠0 : ≠0 k) (pr : div-exp σ t₁) → divall σ (:¬ (k :| t₁))
-  :∧-divall : ∀ {φ₁ φ₂ : form n} (pr₁ : divall σ φ₁) (pr₂ : divall σ φ₂) → divall σ (φ₁ :∧ φ₂)
-  :∨-divall : ∀ {φ₁ φ₂ : form n} (pr₁ : divall σ φ₁) (pr₂ : divall σ φ₂) → divall σ (φ₁ :∨ φ₂)
-
-data isunit : {n : ℕ} → exp n → Set where
-  val-isunit :  ∀ {n k} → isunit (val {n} k)
-  varn-isunit : ∀ {n} {t : exp n} {p : ℕ} (pr : islinn-i (ℕ.suc p) t) → isunit t
-  var0-isunit : ∀ {n} {t : exp (ℕ.suc n)} {k} (k1 : ∣ k ∣ ≡ 1) (pr : islinn-i 1 t) →
-                isunit ((k :* (var zero)) :+ t)
-
-data isunitary {n : ℕ} : form n → Set where
-  T-isunitary : isunitary (T {n})
-  F-isunitary : isunitary (F {n})
-  :≤-isunitary : ∀ {t₁} (pr : isunit t₁) → isunitary (t₁ :≤ :0)
-  :≡-isunitary : ∀ {t₁} (pr : isunit t₁) → isunitary (t₁ :≡ :0)
-  :≢-isunitary : ∀ {t₁ : exp n} (pr : isunit t₁) → isunitary (:¬ (t₁ :≡ :0))
-  :|-isunitary : ∀ {k : ℤ} {t₁ : exp n} (k≠0 : ≠0 k) (pr : isunit t₁) → isunitary (k :| t₁)
-  :|̸-isunitary : ∀ {k : ℤ} {t₁ : exp n} (k≠0 : ≠0 k) (pr : isunit t₁) → isunitary (:¬ (k :| t₁))
-  :∧-isunitary : ∀ {φ₁ φ₂ : form n} (pr₁ : isunitary φ₁) (pr₂ : isunitary φ₂) → isunitary (φ₁ :∧ φ₂)
-  :∨-isunitary : ∀ {φ₁ φ₂ : form n} (pr₁ : isunitary φ₁) (pr₂ : isunitary φ₂) → isunitary (φ₁ :∨ φ₂)
-
-data contains0-exp : {n : ℕ} → exp n → Set where
-  var0-contains0 : ∀ {n} {t : exp (ℕ.suc n)} {k : ℤ} → islinn-i 1 t →
-                   contains0-exp ((k :* (var zero)) :+ t)
-
-data contains0 {n : ℕ} : form n → Set where
-  :≤-contains0 : ∀ {t₁ : exp n} → contains0-exp t₁ → contains0 (t₁ :≤ :0)
-  :≡-isunitary : ∀ {t₁ : exp n} → contains0-exp t₁ → contains0 (t₁ :≡ :0)
-  :≢-isunitary : ∀ {t₁ : exp n} → contains0-exp t₁ → contains0 (:¬ (t₁ :≡ :0))
-  :|-isunitary : ∀ {k} {t₁ : exp n} (k≠0 : ≠0 k) → contains0-exp t₁ → contains0 (k :| t₁)
-  :|̸-isunitary : ∀ {k} {t₁ : exp n} (k≠0 : ≠0 k) → contains0-exp t₁ → contains0 (:¬ (k :| t₁))
-  :∧-isunitary : ∀ {φ₁ φ₂ : form n} (pr : contains0 φ₁ ⊎ contains0 φ₂) → contains0 (φ₁ :∧ φ₂)
-  :∨-isunitary : ∀ {φ₁ φ₂ : form n} (pr : contains0 φ₁ ⊎ contains0 φ₂) → contains0 (φ₁ :∨ φ₂)
+data Unit {n : ℕ} : form n → Set where
+  T    : Unit T
+  F    : Unit F
+  _:≤0 : ∀ {t} → Unit-E t → Unit (t :≤ :0)
+  _:≡0 : ∀ {t} → Unit-E t → Unit (t :≡ :0)
+  _:≢0 : ∀ {t} → Unit-E t → Unit (:¬ (t :≡ :0))
+  _:|_ : ∀ {k t} → k ≠0 → Unit-E t → Unit (k :| t)
+  _:|̸_ : ∀ {k t} → k ≠0 → Unit-E t → Unit (:¬ (k :| t))
+  _:∧_ : ∀ {φ₁ φ₂} → Unit φ₁ → Unit φ₂ → Unit (φ₁ :∧ φ₂)
+  _:∨_ : ∀ {φ₁ φ₂} → Unit φ₁ → Unit φ₂ → Unit (φ₁ :∨ φ₂)
 
 -----
--- Almost free from (var zero)
+-- Contains var0
 -----
 
-data free0-exp {n : ℕ} : exp n → Set where
-  val-free0 : ∀ {k} → free0-exp (val {n} k)
-  varn-free0 : ∀ {t : exp n} {p : ℕ} (pr : islinn-i (ℕ.suc p) t) → free0-exp t
+data Has0-E : {n : ℕ} → exp n → Set where
+  _*var0+_ : ∀ {n t} (k : ℤ) → Lin-E 1 t → Has0-E {ℕ.suc n} ((k :* (var zero)) :+ t)
 
-data allmost-free0 {n : ℕ} : form n → Set where
-  T-allmost : allmost-free0 (T {n})
-  F-allmost : allmost-free0 (F {n})
-  :≤-allmost : ∀ {t₁ : exp n} (pr : free0-exp t₁) → allmost-free0 (t₁ :≤ :0)
-  :≡-allmost : ∀ {t₁ : exp n} (pr : free0-exp t₁) → allmost-free0 (t₁ :≡ :0)
-  :≢-allmost : ∀ {t₁ : exp n} (pr : free0-exp t₁) → allmost-free0 (:¬ (t₁ :≡ :0))
-  :|-allmost : ∀ {k} {t₁ : exp n} (k≠0 : ≠0 k) (pr : isunit t₁) → allmost-free0 (k :| t₁)
-  :|̸-allmost : ∀ {k} {t₁ : exp n} (k≠0 : ≠0 k) (pr : isunit t₁) → allmost-free0 (:¬ (k :| t₁))
-  :∧-allmost : ∀ {φ₁ φ₂ : form n} (pr₁ : allmost-free0 φ₁) (pr₂ : allmost-free0 φ₂) →
-               allmost-free0 (φ₁ :∧ φ₂)
-  :∨-allmost : ∀ {φ₁ φ₂ : form n} (pr₁ : allmost-free0 φ₁) (pr₂ : allmost-free0 φ₂) →
-               allmost-free0 (φ₁ :∨ φ₂)
+data Has0 {n : ℕ} : form n → Set where
+  _:≤0 : ∀ {t} → Has0-E t → Has0 (t :≤ :0)
+  _:≡0 : ∀ {t} → Has0-E t → Has0 (t :≡ :0)
+  _:≢0 : ∀ {t} → Has0-E t → Has0 (:¬ (t :≡ :0))
+  _:|_ : ∀ {k t} → k ≠0 → Has0-E t → Has0 (k :| t)
+  _:|̸_ : ∀ {k t} → k ≠0 → Has0-E t → Has0 (:¬ (k :| t))
+  :∧-⊎ : ∀ {φ₁ φ₂} → Has0 φ₁ ⊎ Has0 φ₂ → Has0 (φ₁ :∧ φ₂)
+  :∨-⊎ : ∀ {φ₁ φ₂} → Has0 φ₁ ⊎ Has0 φ₂ → Has0 (φ₁ :∨ φ₂)
 
 -----
--- 
+-- Almost free from var0
 -----
 
-data alldvd {n : ℕ} (σ : Notnull) : form n → Set where
-  T-alldvd : alldvd σ (T {n})
-  F-alldvd : alldvd σ (F {n})
-  :≤-alldvd : ∀ {t₁ : exp n} → alldvd σ (t₁ :≤ :0)
-  :≡-alldvd : ∀ {t₁ : exp n} → alldvd σ (t₁ :≡ :0)
-  :≢-alldvd : ∀ {t₁ : exp n} → alldvd σ (:¬ (t₁ :≡ :0))
-  :|-alldvd : ∀ {k} {t₁ : exp n} (k≠0 : ≠0 k) (pr : k ∣ (proj₁ σ)) → alldvd σ (k :| t₁)
-  :|̸-alldvd : ∀ {k} {t₁ : exp n} (k≠0 : ≠0 k) (pr : k ∣ (proj₁ σ)) → alldvd σ (:¬ (k :| t₁))
-  :∧-alldvd : ∀ {φ₁ φ₂ : form n} (pr₁ : alldvd σ φ₁) (pr₂ : alldvd σ φ₂) → alldvd σ (φ₁ :∧ φ₂)
-  :∨-alldvd : ∀ {φ₁ φ₂ : form n} (pr₁ : alldvd σ φ₁) (pr₂ : alldvd σ φ₂) → alldvd σ (φ₁ :∨ φ₂)
+data Free0-E {n : ℕ} : exp n → Set where
+  val     : ∀ k → Free0-E (val k)
+  varn_+_ : ∀ {t : exp n} p → Lin-E (ℕ.suc p) t → Free0-E t
+
+data Free0 {n : ℕ} : form n → Set where
+  T    : Free0 T
+  F    : Free0 F
+  _:≤0 : ∀ {t} → Free0-E t → Free0 (t :≤ :0)
+  _:≡0 : ∀ {t} → Free0-E t → Free0 (t :≡ :0)
+  _:≢0 : ∀ {t} → Free0-E t → Free0 (:¬ (t :≡ :0))
+  _:|_ : ∀ {k t} → k ≠0 → Unit-E t → Free0 (k :| t)
+  _:|̸_ : ∀ {k t} → k ≠0 → Unit-E t → Free0 (:¬ (k :| t))
+  _:∧_ : ∀ {φ₁ φ₂} → Free0 φ₁ → Free0 φ₂ → Free0 (φ₁ :∧ φ₂)
+  _:∨_ : ∀ {φ₁ φ₂} → Free0 φ₁ → Free0 φ₂ → Free0 (φ₁ :∨ φ₂)
 
 -----
--- Data structures
+-- For all k|_, k | σ
 -----
 
-Qfree : ℕ → Set
-Qfree n = Σ (form n) isqfree
-
-Nnf : ℕ → Set
-Nnf n = Σ (form n) isnnf
-
-Lin′ : ℕ → ℕ → Set
-Lin′ n p =  Σ (exp n) (islinn-i p)
-
-Lin : ℕ → Set
-Lin n = Σ (form n) islin
-
-Une : ℕ → Set
-Une n = Σ (exp n) isunit
-
-Unf : ℕ → Set
-Unf n = Σ (form n) isunitary
-
-Af0 : ℕ → Set
-Af0 n = Σ (form n) allmost-free0
-
-Zfe : ℕ → Set
-Zfe n = Σ (exp n) free0-exp
-
-Dall : {n : ℕ} → form n → Set
-Dall φ = Σ Notnull (λ σ → alldvd σ φ)
+data All∣ {n : ℕ} (σ : Notnull) : form n → Set where
+  T    : All∣ σ T
+  F    : All∣ σ F
+  _:≤0 : ∀ {t} → All∣ σ (t :≤ :0)
+  _:≡0 : ∀ {t} → All∣ σ (t :≡ :0)
+  _:≢0 : ∀ {t} → All∣ σ (:¬ (t :≡ :0))
+  _:|_ : ∀ {k t} → k ≠0 → k ∣ (proj₁ σ) → All∣ σ (k :| t)
+  _:|̸_ : ∀ {k t} → k ≠0 → k ∣ (proj₁ σ) → All∣ σ (:¬ (k :| t))
+  _:∧_ : ∀ {φ₁ φ₂} → All∣ σ φ₁ → All∣ σ φ₂ → All∣ σ (φ₁ :∧ φ₂)
+  _:∨_ : ∀ {φ₁ φ₂} → All∣ σ φ₁ → All∣ σ φ₂ → All∣ σ (φ₁ :∨ φ₂)
