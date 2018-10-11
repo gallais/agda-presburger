@@ -1,20 +1,22 @@
 module Properties where
 
 open import Data.Nat as ℕ
+import Data.Nat.LCM as LCM
+import Data.Nat.GCD as GCD
+import Data.Nat.Properties as NProp
 open import Data.Integer as ℤ
+open import Data.Integer.Divisibility
+import Data.Integer.Properties as ZProp
 open import Data.Fin as F
 open import Data.Empty
 open import Data.Product
 open import Data.Sum
-open import Data.Vec
+open import Function
 
-open import Data.Integer.Divisibility
-
-open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
+open ≡-Reasoning
 
 open import Representation
-open import Comparisons
 
 -----
 -- Notations
@@ -24,6 +26,15 @@ infix 3 _≠0
 data _≠0 : ℤ → Set where
   +[1+_] : ∀ k → + (ℕ.suc k) ≠0
   -[1+_] : ∀ k → -[1+ k ] ≠0
+
+from≢0 : ∀ {k} → k ≢ + 0 → k ≠0
+from≢0 {+ zero}    k≢0 = ⊥-elim (k≢0 refl)
+from≢0 {+ suc n}   k≢0 = +[1+ n ]
+from≢0 { -[1+ n ]} k≢0 = -[1+ n ]
+
+to≢0 : ∀ {k} → k ≠0 → k ≢ + 0
+to≢0 +[1+ k ] = λ ()
+to≢0 -[1+ k ] = λ ()
 
 infix 3 _≠0?
 _≠0? : ∀ k → (k ≡ + 0) ⊎ (k ≠0)
@@ -40,20 +51,36 @@ toℤ {k} _ = k
 [ -[1+ k ] * +[1+ l ] ≠0] = -[1+ l ℕ.+ k ℕ.* ℕ.suc l ]
 [ -[1+ k ] * -[1+ l ] ≠0] = +[1+ l ℕ.+ k ℕ.* ℕ.suc l ]
 
+[∣_∣≠0] : ∀ {k} → k ≠0 → + ∣ k ∣ ≠0
+[∣ +[1+ k ] ∣≠0] = +[1+ k ]
+[∣ -[1+ k ] ∣≠0] = +[1+ k ]
+
+lcm≠0 : ∀ {k l} → k ≠0 → l ≠0 → + proj₁ (LCM.lcm ∣ k ∣ ∣ l ∣) ≠0
+lcm≠0 {k} {l} k≠0 l≠0 = from≢0 $ λ lcm≡0 →
+  let (gcd , prfgcd) = GCD.gcd ∣ k ∣ ∣ l ∣
+      (lcm , prflcm) = LCM.lcm ∣ k ∣ ∣ l ∣ in
+  [ to≢0 [∣ k≠0 ∣≠0] ∘ cong ℤ.pos
+  , to≢0 [∣ l≠0 ∣≠0] ∘ cong ℤ.pos
+  ]′
+  $ NProp.i*j≡0⇒i≡0∨j≡0 ∣ k ∣ $ begin
+    ∣ k ∣ ℕ.* ∣ l ∣ ≡⟨ LCM.gcd*lcm prfgcd prflcm ⟩
+    gcd   ℕ.* lcm   ≡⟨ cong (gcd ℕ.*_) (ZProp.+-injective lcm≡0) ⟩
+    gcd   ℕ.* 0     ≡⟨ NProp.*-zeroʳ gcd ⟩
+    0               ∎
+
 infix 3 [-_≠0]
 [-_≠0] : ∀ {k} → k ≠0 → - k ≠0
 [- +[1+ k ] ≠0] = -[1+ k ]
 [- -[1+ k ] ≠0] = +[1+ k ]
-
-[∣_∣≠0] : ∀ {k} → k ≠0 → + ∣ k ∣ ≠0
-[∣ +[1+ k ] ∣≠0] = +[1+ k ]
-[∣ -[1+ k ] ∣≠0] = +[1+ k ]
 
 Notnull : Set
 Notnull = Σ ℤ _≠0
 
 ∣_∣≠0 : Notnull → Notnull
 ∣ σ , Hσ ∣≠0 = + ∣ σ ∣ , [∣ Hσ ∣≠0]
+
+1≠0 : Notnull
+1≠0 = -, +[1+ 0 ]
 
 :0 : {n : ℕ} → exp n
 :0 {n} = val {n} (+ 0)
@@ -119,10 +146,10 @@ data Lin {n : ℕ} : form n → Set where
 -----
 
 data Div-E (σ : Notnull) : {n : ℕ} → exp n → Set where
-  val       : ∀ {n} k → Div-E σ {n} (val k)
-  c*varn_+_ : ∀ {n} {t : exp n} (p : ℕ) → Lin-E (ℕ.suc p) t → Div-E σ t
-  _*var0+_  : ∀ {n} {t : exp (ℕ.suc n)} {k : ℤ} → k ∣ (proj₁ σ) → Lin-E 1 t →
-              Div-E σ ((k :* var zero) :+ t)
+  val         : ∀ {n} k → Div-E σ {n} (val k)
+  c*varn_+_   : ∀ {n} {t : exp n} (p : ℕ) → Lin-E (ℕ.suc p) t → Div-E σ t
+  _[_]*var0+_ : ∀ {n} {t : exp (ℕ.suc n)} k → k ∣ (proj₁ σ) → Lin-E 1 t →
+                Div-E σ ((k :* var zero) :+ t)
 
 data Div {n : ℕ} (σ : Notnull) : form n → Set where
   T    : Div σ T
@@ -140,10 +167,10 @@ data Div {n : ℕ} (σ : Notnull) : form n → Set where
 -----
 
 data Unit-E : {n : ℕ} → exp n → Set where
-  val      : ∀ {n} k → Unit-E {n} (val k)
-  varn_+_  : ∀ {n} {t : exp n} (p : ℕ) → Lin-E (ℕ.suc p) t → Unit-E t
-  _*var0+_ : ∀ {n t} {k} → ∣ k ∣ ≡ 1 → Lin-E {ℕ.suc n} 1 t →
-             Unit-E ((k :* (var zero)) :+ t)
+  val         : ∀ {n} k → Unit-E {n} (val k)
+  varn_+_     : ∀ {n} {t : exp n} (p : ℕ) → Lin-E (ℕ.suc p) t → Unit-E t
+  _[_]*var0+_ : ∀ {n t} k → ∣ k ∣ ≡ 1 → Lin-E {ℕ.suc n} 1 t →
+                Unit-E ((k :* (var zero)) :+ t)
 
 data Unit {n : ℕ} : form n → Set where
   T    : Unit T
