@@ -89,6 +89,13 @@ Notnull = Σ ℤ _≠0
 :1 {n} = val {n} (+ 1)
 
 -----
+-- Erasure functions
+----
+
+toForm : ∀ (P : ∀ {n} → form n → Set) {n φ} → P {n} φ → form n
+toForm _ {φ = φ} _ = φ
+
+-----
 -- To be quantifier free
 -----
 
