@@ -1,78 +1,48 @@
 module Disjunction where
 
-open import Data.Nat as ℕ
-open import Data.Integer as ℤ
-open import Data.Fin as F
-open import Data.Vec
-open import Data.List hiding (and ; or) renaming (_∷_ to _L∷_)
-open import Product
-import Data.Product as P
+open import Data.Nat as ℕ using (ℕ)
+open import Data.Fin as Fin using (Fin)
+open import Data.List as List
+open import Data.Product as Prod
 
 open import Relation.Binary.PropositionalEquality
 
-open import Representation
 open import Properties
 open import Properties-prop
-open import Normalization.Linearization
+open import Normalization.Linearisation
+open import Normalization.LCMReduction
 open import Normalization.Unitarization
-open import Semantics
 
-open import Function
+infix 3 ⋁_
 
-Fin-dij : ∀ {A : Set} {n p : ℕ} (φ : A → Lin n) (L : Vec A p) → Lin n
-Fin-dij φ [] = F , F-islin
-Fin-dij φ (x ∷ []) = φ x
-Fin-dij φ (x ∷ x' ∷ xs) = ((proj₁ (φ x)) or (proj₁ (Fin-dij φ (x' ∷ xs)))) , or-islin (proj₂ (φ x)) (proj₂ (Fin-dij φ (x' ∷ xs)))
+⋁_ : ∀ {n} → List (∃ (Lin {n})) → ∃ (Lin {n})
+⋁_ = List.foldr (λ φ ψ → -, proj₂ φ :∨ proj₂ ψ) (-, F)
 
-decr-lin : ∀ {n} {p} → Lin′ (ℕs n) (ℕs p) → Lin′ n p
-decr-lin {n} {p} (.(val k) , val-islinn-i {.(ℕs p)} {k}) = val k , val-islinn-i
-decr-lin {n} {p} (.((k :* var zero) :+ r) , var-islinn-i {.(ℕs p)} {k} {zero} {r} y () y0)
-decr-lin {n} {p} (.((k :* var (Fs i)) :+ r) , var-islinn-i {.(ℕs p)} {k} {Fs i} {r} y (s≤s y') y0) with decr-lin (r , y0)
-... | r' , h' = ((k :* var i) :+ r' ) , (var-islinn-i y y' h')
+lin-E⁻ : ∀ {n p e} → Lin-E {ℕ.suc n} (ℕ.suc p) e → ∃ (Lin-E {n} p)
+lin-E⁻ (val k)                       = -, val k
+lin-E⁻ (k *var Fin.zero  [ () ]+ e)
+lin-E⁻ (k *var Fin.suc p [ ℕ.s≤s prf ]+ e) = -, k *var p [ prf ]+ proj₂ (lin-E⁻ e)
 
-decr-exp : ∀ {n p} → Lin′ (ℕs n) (ℕs p) → Une n
-decr-exp e with decr-lin e | lcme (decr-lin e)
-... | e' | k , Hk = unit-exp e' k Hk
+unit-E⁻ : ∀ {n p e} → Lin-E {ℕ.suc n} (ℕ.suc p) e → ∃ (Unit-E {n})
+unit-E⁻ e = unit-E (proj₂ (div-E (proj₂ (lin-E⁻ e))))
 
-Inst-exp : ∀ {n p p'} (e : Lin′ (ℕs n) p) (e' : Lin′ (ℕs n) (ℕs p')) → Lin′ (ℕs n) 1
-Inst-exp {n} {p} (.(val k) , val-islinn-i {.p} {k}) _ = val k , val-islinn-i
-Inst-exp {n} {p} (.((k :* var zero) :+ r) , var-islinn-i {.p} {k} {zero} {r} y y' y0) (e' , He') with lin-mult k (e' , He')
-... | e'' , He'' = lin-plus (e'' , islinn-i-weakening (s≤s z≤n) He'') (r , y0)
-Inst-exp {n} {p} (.((k :* var (Fs i)) :+ r) , var-islinn-i {.p} {k} {Fs i} {r} y y' y0) _ = (k :* var (Fs i)) :+ r , var-islinn-i y (s≤s z≤n) y0
+⟨_/0⟩-E_ : ∀ {n p p' e f} → Lin-E {ℕ.suc n} (ℕ.suc p) e → Lin-E {ℕ.suc n} p' f →
+           ∃ (Lin-E {ℕ.suc n} 1)
+⟨ f /0⟩-E val k                         = -, val k
+⟨ f /0⟩-E (k *var Fin.zero  [ prf ]+ e) = Lin-E^wk (ℕ.s≤s ℕ.z≤n) (proj₂ (k ≠0*E f)) +E e
+⟨ f /0⟩-E (k *var Fin.suc p [ prf ]+ e) = -, k *var Fin.suc p [ ℕ.s≤s ℕ.z≤n ]+ e
 
-Inst-unit-exp : ∀ {n p p'} (e : Lin′ (ℕs n) p) (e' : Lin′ (ℕs n) (ℕs p')) → Une n
-Inst-unit-exp e e' = decr-exp (Inst-exp e e')
+⟨_/0⟩-E⁻_ : ∀ {n p p' e f} → Lin-E {ℕ.suc n} (ℕ.suc p) e → Lin-E {ℕ.suc n} p' f →
+            ∃ (Lin-E {n} 0)
+⟨ f /0⟩-E⁻ e = lin-E⁻ (proj₂ (⟨ f /0⟩-E e))
 
-Inst-form : ∀ {n p'} (φ : Lin (ℕs n)) (e' : Lin′ (ℕs n) (ℕs p')) → Lin n
-Inst-form (.T , T-islin) e' = T , T-islin
-Inst-form (.F , F-islin) e' = F , F-islin
-Inst-form {n} (.(t₁ le val (+ 0)) , le-islin {t₁} y) e' with decr-lin (Inst-exp (t₁ , y) e')
-... | e , He = e le val (+ 0) , le-islin He
-Inst-form {n} (.(t₁ eq val (+ 0)) , eq-islin {t₁} y) e' with decr-lin (Inst-exp (t₁ , y) e')
-... | e , He  = e eq val (+ 0) , eq-islin He
-Inst-form {n} (.(not (t₁ eq val (+ 0))) , neq-islin {t₁} y) e' with decr-lin (Inst-exp (t₁ , y) e')
-... | e , He  = not (e eq val (+ 0)) , neq-islin He
-Inst-form {n} (.(k dvd t₁) , dvd-islin {k} {t₁} y y') e' with decr-lin (Inst-exp (t₁ , y') e')
-... | e , He  = k dvd e , dvd-islin y He
-Inst-form {n} (.(not (k dvd t₁)) , ndvd-islin {k} {t₁} y y') e' with decr-lin (Inst-exp (t₁ , y') e')
-... | e , He  = (not (k dvd e)) , ndvd-islin y He
-Inst-form {n} (.(φ₁ and φ₂) , and-islin {φ₁} {φ₂} y y') e' with Inst-form (φ₁ , y) e' | Inst-form (φ₂ , y') e'
-... | ψ₁ , h₁ | ψ₂ , h₂ = ψ₁ and ψ₂ , and-islin h₁ h₂
-Inst-form {n} (.(φ₁ or φ₂) , or-islin {φ₁} {φ₂} y y') e' with Inst-form (φ₁ , y) e' | Inst-form (φ₂ , y') e'
-... | ψ₁ , h₁ | ψ₂ , h₂ = ψ₁ or ψ₂ , or-islin h₁ h₂
-
-Finite-disjunction : ∀ {n p p' : ℕ} (φ : Lin (ℕs n)) (L : Vec (Lin′ (ℕs n) (ℕs p')) p) → Lin n
-Finite-disjunction φ [] = F , F-islin
-Finite-disjunction φ (x ∷ []) = Inst-form φ x
-Finite-disjunction φ (x ∷ x' ∷ xs) with Inst-form φ x | Finite-disjunction φ (x' ∷ xs)
-... | ψ₁ , h₁ | ψ₂ , h₂ = ψ₁ or ψ₂ , or-islin h₁ h₂
-
-Finite-disjunction-unit : ∀ {n p p' : ℕ} (φ : Lin (ℕs n)) (L : Vec (Lin′ (ℕs n) (ℕs p')) (ℕs p)) → Unf n
-Finite-disjunction-unit φ L with Finite-disjunction φ L | lcmφ (Finite-disjunction φ L)
-... | ψ , h | P._,_ σ Hdiv = unitarise-aux (ψ , h) σ Hdiv
-
-Finite-disjunction′ : ∀ {n p' : ℕ} (φ : Lin (ℕs n)) (L : List (Lin′ (ℕs n) (ℕs p'))) → Lin n
-Finite-disjunction′ φ [] = F , F-islin
-Finite-disjunction′ φ (x L∷ []) = Inst-form φ x
-Finite-disjunction′ φ (x L∷ x' L∷ xs) with Inst-form φ x | Finite-disjunction′ φ (x' L∷ xs)
-... | ψ₁ , h₁ | ψ₂ , h₂ = ψ₁ or ψ₂ , or-islin h₁ h₂
+⟨_/0⟩_ : ∀ {n p f φ} → Lin-E {ℕ.suc n} (ℕ.suc p) f → Lin {ℕ.suc n} φ → ∃ (Lin {n})
+⟨ f /0⟩ T        = -, T
+⟨ f /0⟩ F        = -, F
+⟨ f /0⟩ (e :≤0)  = -, proj₂ (⟨ f /0⟩-E⁻ e) :≤0
+⟨ f /0⟩ (e :≡0)  = -, proj₂ (⟨ f /0⟩-E⁻ e) :≡0
+⟨ f /0⟩ (e :≢0)  = -, proj₂ (⟨ f /0⟩-E⁻ e) :≢0
+⟨ f /0⟩ (k :| e) = -, k :| proj₂ (⟨ f /0⟩-E⁻ e)
+⟨ f /0⟩ (k :|̸ e) = -, k :|̸ proj₂ (⟨ f /0⟩-E⁻ e)
+⟨ f /0⟩ (φ :∧ ψ) = -, proj₂ (⟨ f /0⟩ φ) :∧ proj₂ (⟨ f /0⟩ ψ)
+⟨ f /0⟩ (φ :∨ ψ) = -, proj₂ (⟨ f /0⟩ φ) :∨ proj₂ (⟨ f /0⟩ ψ)
