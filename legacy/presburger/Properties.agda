@@ -18,6 +18,9 @@ open ≡-Reasoning
 
 open import Representation
 
+infix 20 _:≡0 _:≢0 _:≤0
+infixr 20 _:|_ _:|̸_
+
 -----
 -- Notations
 -----
@@ -135,6 +138,7 @@ data NNF {n : ℕ} : form n → Set where
 -- To be linear
 -----
 
+infix 21 _*var_[_]+_
 data Lin-E {n : ℕ} (n₀ : ℕ) : exp n → Set where
   val         : (k : ℤ) → Lin-E n₀ (val k)
   _*var_[_]+_ : {k : ℤ} → k ≠0 → (p : Fin n) {r : exp n} →
@@ -155,6 +159,7 @@ data Lin {n : ℕ} : form n → Set where
 -- All of var0's coefficients are divisible by σ
 -----
 
+infixr 21 c*varn_+_ _[_]*var0+_
 data Div-E (σ : Notnull) : {n : ℕ} → exp n → Set where
   val         : ∀ {n} k → Div-E σ {n} (val k)
   c*varn_+_   : ∀ {n} {t : exp n} (p : ℕ) → Lin-E (ℕ.suc p) t → Div-E σ t
@@ -176,10 +181,29 @@ data Div {n : ℕ} (σ : Notnull) : form n → Set where
 -- To be unitary
 -----
 
+pattern :+1 = ℤ.+ 1
+pattern :-1 = ℤ.-[1+ 0 ]
+
+data ∣_∣≡1 : ℤ → Set where
+  ∣+1∣ : ∣ :+1 ∣≡1
+  ∣-1∣ : ∣ :-1 ∣≡1
+
+toAbs : ∀ {k} → ∣ k ∣≡1 → ∣ k ∣ ≡ 1
+toAbs ∣+1∣ = refl
+toAbs ∣-1∣ = refl
+
+fromAbs : ∀ {k} → ∣ k ∣ ≡ 1 → ∣ k ∣≡1
+fromAbs {+ 1}       eq = ∣+1∣
+fromAbs { -[1+ 0 ]} eq = ∣-1∣
+fromAbs {+ zero}             ()
+fromAbs {+ ℕ.suc (ℕ.suc _) } ()
+fromAbs { -[1+ ℕ.suc _ ]}    ()
+
+infixr 21 varn_+_
 data Unit-E : {n : ℕ} → exp n → Set where
   val         : ∀ {n} k → Unit-E {n} (val k)
   varn_+_     : ∀ {n} {t : exp n} (p : ℕ) → Lin-E (ℕ.suc p) t → Unit-E t
-  _[_]*var0+_ : ∀ {n t} k → ∣ k ∣ ≡ 1 → Lin-E {ℕ.suc n} 1 t →
+  _[_]*var0+_ : ∀ {n t} k → ∣ k ∣≡1 → Lin-E {ℕ.suc n} 1 t →
                 Unit-E ((k :* (var zero)) :+ t)
 
 data Unit {n : ℕ} : form n → Set where

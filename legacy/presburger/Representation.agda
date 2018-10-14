@@ -10,7 +10,6 @@ open import Data.Integer as ℤ
 
 -- expressions
 
-
 infix 22 :-_
 infix 23 _:+_ _:-_
 infix 24 _:*_
