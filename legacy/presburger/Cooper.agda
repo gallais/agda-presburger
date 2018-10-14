@@ -2,24 +2,22 @@ module Cooper where
 
 open import Representation
 open import Properties
-open import Properties-prop using (abs-Notnull)
-open import Normalization.Linearization using (lin-plus ; lin-opp)
-open import Normalization.Linearization-prop using (lin-plus-sem ; lin-opp-sem)
+open import Properties-prop
+open import Normalization.Linearisation
+open import Normalization.Linearisation-prop
 open import Semantics
-open import Semantics-prop using (context-simpl)
-open import AllmostFree-prop using (lcm-dvd ; dvd-mod)
+open import Semantics-prop
+-- open import AllmostFree-prop using (lcm-dvd ; dvd-mod)
 open import Bset
 
-open import Integer.Basic-Properties
-open import Integer.Order-Properties
-import Integer.Structures as IntProp
 open import Fin-prop
 open import List-tools using (_∈_ ; ∈-ext₁ ; ∈-ext₂ ; b∈[]-elim ; b∈L-elim ; here ; there)
 
-open import Data.Nat as Nat renaming (suc to ℕs ; pred to ℕp ; _+_ to _ℕ+_ ; _*_ to _ℕ*_ ; _≤_ to _ℕ≤_ ; _⊔_ to _ℕ⊔_ ; _⊓_ to _ℕ⊓_ ; _≤?_ to _ℕ≤?_ ; _≟_ to _ℕ≟_)
-open import Data.Integer as Int renaming (suc to ℤs ; pred to ℤp ; _+_ to _ℤ+_ ; _*_ to _ℤ*_ ; _-_ to _ℤ-_ ; _≤_ to _ℤ≤_ ; _⊔_ to _ℤ⊔_ ; _⊓_ to _ℤ⊓_ ; _≤?_ to _ℤ≤?_ ; _≟_ to _ℤ≟_)
-open import Data.Fin renaming (suc to Fs ; _≤_ to _F≤_)
+open import Data.Nat as ℕ using (ℕ)
+open import Data.Integer as ℤ using (ℤ)
+open import Data.Fin as Fin using (Fin)
 
+{-
 open import Data.Empty
 open import Data.Unit
 import Data.Product as P
@@ -121,3 +119,4 @@ abstract
   cooper₁-simpl φ ρ ¬H .z φx | z | equal refl | H = P._,_ z (P.proj₁ (H z ℤ≤.refl) φx)
   cooper₁-simpl φ ρ ¬H x φx | z | greater y | H with ℤ≤-reachability x z (proj₁ (lcm-dvd (minusinf φ))) (ℤ≤.trans (nℤ≤sn z) y)
   ... | P._,_ k Hk = P._,_ (x ℤ- ((+ k) ℤ* + my-δ φ)) (P.proj₁ (H (x ℤ- ((+ k) ℤ* + my-δ φ)) Hk) (cooper₁-ext k φ ρ ¬H x φx))
+-}
