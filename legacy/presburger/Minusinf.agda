@@ -15,6 +15,7 @@ open import Properties
 open import Semantics
 open import Semantics-prop
 open import Equivalence
+open import Comparisons
 
 pattern :-1 = ℤ.-[1+ 0 ]
 pattern :+0 = ℤ.+ 0
@@ -67,59 +68,67 @@ cooper-aux x t x≤pt = begin
   ℤ.- x ℤ.+ t           ∎ where open ZProp.≤-Reasoning
 
 
-cooper : ∀ {n f} (φ : Unit f) ρ {x} → x ℤ.≤ bound {n} φ ρ →
+cooper-bound : ∀ {n f} (φ : Unit f) x ρ → x ℤ.≤ bound {n} φ ρ →
          ⟦ f ⟧ (x ∷ ρ) ↔ ⟦ proj₁ (var0⟶-∞ φ) ⟧ (x ∷ ρ)
-cooper T ρ x≤lb = ↔-refl
-cooper F ρ x≤lb = ↔-refl
+cooper-bound T x ρ x≤lb = ↔-refl
+cooper-bound F x ρ x≤lb = ↔-refl
 -- :≤0
-cooper (:+1 [ ∣+1∣ ]*var0+ e :≤0) ρ {x} x≤lb = -,_ $ const $ begin
+cooper-bound (:+1 [ ∣+1∣ ]*var0+ e :≤0) x ρ x≤lb = -,_ $ const $ begin
   let t = toExp (Lin-E 1) e; ⟦t⟧ = λ x → ⟦ t ⟧e (x ∷ ρ) in
   :+1 ℤ.* x ℤ.+ ⟦t⟧ x         ≡⟨ cong₂ ℤ._+_ (ZProp.*-identityˡ x) (lin-ext₁ e x :+0 ρ) ⟩
   x ℤ.+ ⟦t⟧ :+0               ≤⟨ ZProp.+-monoˡ-≤ (⟦ t ⟧e (:+0 ∷ ρ)) x≤lb ⟩
   ℤ.- (⟦t⟧ :+0) ℤ.+ (⟦t⟧ :+0) ≡⟨ ZProp.+-inverseˡ (⟦t⟧ :+0) ⟩
   :+0 ∎ where open ZProp.≤-Reasoning
-cooper (:-1 [ ∣-1∣ ]*var0+ e :≤0) ρ {x} x≤lb = flip _,_ ⊥-elim $ ZProp.>→≰ $ begin
+cooper-bound (:-1 [ ∣-1∣ ]*var0+ e :≤0) x ρ x≤lb = flip _,_ ⊥-elim $ ZProp.>→≰ $ begin
   let ⟦t⟧ = λ x → ⟦ toExp (Lin-E 1) e ⟧e (x ∷ ρ) in
   :+0                 <⟨ cooper-aux x (⟦t⟧ :+0) x≤lb ⟩
   ℤ.- x ℤ.+ ⟦t⟧ :+0   ≡⟨ cong₂ ℤ._+_ (sym (ZProp.-1*n≡-n x)) (lin-ext₁ e :+0 x ρ) ⟩
   :-1 ℤ.* x ℤ.+ ⟦t⟧ x ∎ where open ZProp.<-Reasoning
-cooper (val k                :≤0) ρ x≤lb = ↔-refl
-cooper (varn p + e           :≤0) ρ x≤lb = ↔-refl
+cooper-bound (val k                :≤0) x ρ x≤lb = ↔-refl
+cooper-bound (varn p + e           :≤0) x ρ x≤lb = ↔-refl
 -- :≡0
-cooper (:+1 [ ∣+1∣ ]*var0+ e :≡0) ρ {x} x≤lb = flip _,_ ⊥-elim $ flip ZProp.<-irrefl $ begin
+cooper-bound (:+1 [ ∣+1∣ ]*var0+ e :≡0) x ρ x≤lb = flip _,_ ⊥-elim $ flip ZProp.<-irrefl $ begin
   let ⟦t⟧ = λ x → ⟦ toExp (Lin-E 1) e ⟧e (x ∷ ρ) in
   :+1 ℤ.* x ℤ.+ ⟦t⟧ x     ≡⟨ cong₂ ℤ._+_ (ZProp.*-identityˡ x) (lin-ext₁ e x :+0 ρ) ⟩
   x ℤ.+ ⟦t⟧ :+0           <⟨ ZProp.+-monoˡ-< (⟦t⟧ :+0) {x} {ℤ.- ⟦t⟧ :+0} (ZProp.m≤pred[n]⇒m<n x≤lb) ⟩
   ℤ.- ⟦t⟧ :+0 ℤ.+ ⟦t⟧ :+0 ≡⟨ ZProp.+-inverseˡ (⟦t⟧ :+0) ⟩
   :+0 ∎ where open ZProp.<-Reasoning
-cooper (:-1 [ ∣-1∣ ]*var0+ e :≡0) ρ {x} x≤lb = flip _,_ ⊥-elim $ flip ZProp.>-irrefl $ begin
+cooper-bound (:-1 [ ∣-1∣ ]*var0+ e :≡0) x ρ x≤lb = flip _,_ ⊥-elim $ flip ZProp.>-irrefl $ begin
   let ⟦t⟧ = λ x → ⟦ toExp (Lin-E 1) e ⟧e (x ∷ ρ) in
   :+0                 <⟨ cooper-aux x (⟦t⟧ :+0) x≤lb ⟩
   ℤ.- x ℤ.+ ⟦t⟧ :+0   ≡⟨ cong₂ ℤ._+_ (sym (ZProp.-1*n≡-n x)) (lin-ext₁ e :+0 x ρ) ⟩
   :-1 ℤ.* x ℤ.+ ⟦t⟧ x ∎ where open ZProp.<-Reasoning
-cooper (val k                :≡0) ρ x≤lb = ↔-refl
-cooper (varn p + e           :≡0) ρ x≤lb = ↔-refl
+cooper-bound (val k                :≡0) x ρ x≤lb = ↔-refl
+cooper-bound (varn p + e           :≡0) x ρ x≤lb = ↔-refl
 -- :≢0
-cooper (:+1 [ ∣+1∣ ]*var0+ e :≢0) ρ {x} x≤lb = -,_ $ const $ flip ZProp.<-irrefl $ begin
+cooper-bound (:+1 [ ∣+1∣ ]*var0+ e :≢0) x ρ x≤lb = -,_ $ const $ flip ZProp.<-irrefl $ begin
   let ⟦t⟧ = λ x → ⟦ toExp (Lin-E 1) e ⟧e (x ∷ ρ) in
   :+1 ℤ.* x ℤ.+ ⟦t⟧ x     ≡⟨ cong₂ ℤ._+_ (ZProp.*-identityˡ x) (lin-ext₁ e x :+0 ρ) ⟩
   x ℤ.+ ⟦t⟧ :+0           <⟨ ZProp.+-monoˡ-< (⟦t⟧ :+0) {x} {ℤ.- ⟦t⟧ :+0} (ZProp.m≤pred[n]⇒m<n x≤lb) ⟩
   ℤ.- ⟦t⟧ :+0 ℤ.+ ⟦t⟧ :+0 ≡⟨ ZProp.+-inverseˡ (⟦t⟧ :+0) ⟩
   :+0 ∎ where open ZProp.<-Reasoning
-cooper (:-1 [ ∣-1∣ ]*var0+ e :≢0) ρ {x} x≤lb = -,_ $ const $ flip ZProp.>-irrefl $ begin
+cooper-bound (:-1 [ ∣-1∣ ]*var0+ e :≢0) x ρ x≤lb = -,_ $ const $ flip ZProp.>-irrefl $ begin
   let ⟦t⟧ = λ x → ⟦ toExp (Lin-E 1) e ⟧e (x ∷ ρ) in
   :+0                 <⟨ cooper-aux x (⟦t⟧ :+0) x≤lb ⟩
   ℤ.- x ℤ.+ ⟦t⟧ :+0   ≡⟨ cong₂ ℤ._+_ (sym (ZProp.-1*n≡-n x)) (lin-ext₁ e :+0 x ρ) ⟩
   :-1 ℤ.* x ℤ.+ ⟦t⟧ x ∎ where open ZProp.<-Reasoning
-cooper (val k                :≢0) ρ x≤lb = ↔-refl
-cooper (varn p + e           :≢0) ρ x≤lb = ↔-refl
+cooper-bound (val k                :≢0) x ρ x≤lb = ↔-refl
+cooper-bound (varn p + e           :≢0) x ρ x≤lb = ↔-refl
 -- rest
-cooper (k :| e) ρ x≤lb = ↔-refl
-cooper (k :|̸ e) ρ x≤lb = ↔-refl
-cooper (φ :∧ ψ) ρ x≤lb = cooper φ ρ (ZProp.≤-trans x≤lb (ZProp.m⊓n≤m _ _))
-                      ↔× cooper ψ ρ (ZProp.≤-trans x≤lb (ZProp.m⊓n≤n _ _))
-cooper (φ :∨ ψ) ρ x≤lb = cooper φ ρ (ZProp.≤-trans x≤lb (ZProp.m⊓n≤m _ _))
-                      ↔⊎ cooper ψ ρ (ZProp.≤-trans x≤lb (ZProp.m⊓n≤n _ _))
+cooper-bound (k :| e) x ρ x≤lb = ↔-refl
+cooper-bound (k :|̸ e) x ρ x≤lb = ↔-refl
+cooper-bound (φ :∧ ψ) x ρ x≤lb = cooper-bound φ x ρ (ZProp.≤-trans x≤lb (ZProp.m⊓n≤m _ _))
+                              ↔× cooper-bound ψ x ρ (ZProp.≤-trans x≤lb (ZProp.m⊓n≤n _ _))
+cooper-bound (φ :∨ ψ) x ρ x≤lb = cooper-bound φ x ρ (ZProp.≤-trans x≤lb (ZProp.m⊓n≤m _ _))
+                      ↔⊎ cooper-bound ψ x ρ (ZProp.≤-trans x≤lb (ZProp.m⊓n≤n _ _))
+
+
+cooper : ∀ {n f} (φ : Unit {ℕ.suc n} f) x ρ →
+         ⟦ proj₁ (var0⟶-∞ φ) ⟧ (x ∷ ρ) → (∃ λ x → ⟦ f ⟧ (x ∷ ρ))
+cooper φ x ρ prf with ℤcompare x (bound φ ρ)
+... | less    x<lb = -, proj₂ (cooper-bound φ x ρ (ZProp.<⇒≤ x<lb)) prf
+... | equal   x≡lb = -, proj₂ (cooper-bound φ x ρ (ZProp.≤-reflexive x≡lb)) prf
+... | greater x>lb = -, proj₂ (cooper-bound φ {!!} ρ {!!}) {!!}
 
 {-
 cooper₂-simpl : ∀ {n} (φ : Unf (ℕs n)) ρ x → [| proj₁ (minusinf φ) |] (x ∷ ρ) → P.∃ (λ x → [| proj₁ φ |] (x ∷ ρ))
