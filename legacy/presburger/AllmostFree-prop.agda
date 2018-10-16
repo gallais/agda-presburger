@@ -6,62 +6,81 @@ open import Properties-prop
 open import Semantics
 open import Semantics-prop
 open import Equivalence
-open import Lcm
-open import Disjunction
-open import Disjunction-prop
-open import Fin-prop
 
-open import Integer.Basic-Properties
-open import Integer.DivMod
-open import Integer.LCM
-import Integer.Structures as IntProp
+open import Data.Nat as ℕ using (ℕ)
+import Data.Nat.Divisibility as Ndiv
+import Data.Nat.LCM as LCM
 
-open import Relation.Binary.PropositionalEquality
+open import Data.Integer as ℤ using (ℤ)
+import Data.Integer.Divisibility as Zdiv
+open import Data.Integer.Divisibility.Properties
+import Data.Integer.Properties as ZProp
 
--- Datatypes
-open import Data.Sign as S
-open import Data.Nat as ℕ
-open import Data.Integer as ℤ
-open import Data.Nat.Divisibility as ℕdiv
-open import Data.Fin as F
-open import Data.Integer.Divisibility as ℤdiv
-open import Data.Integer.Properties
+open import Data.Fin as Fin using (Fin)
 
-open import Product
-
-import Data.Product as P
-open import Data.Sum
-open import Data.Vec renaming (map to Vmap)
-open import Data.Unit
-open import Data.Empty
+open import Data.Product
+open import Data.Vec
 
 open import Function
-open import Relation.Binary
-open import Algebra.Structures
+open import Relation.Binary.PropositionalEquality
+open import Relation.Binary.SetoidReasoning
 
-private module Pos = Poset Div.poset
-private module ℤr = IsCommutativeRing IntProp.isCommutativeRing
 
-lcm-dvd : ∀ {n} (φ : Af0 n) → Dall (proj₁ φ)
-lcm-dvd (.T , T-allmost) = (+ 1 , λ ()) , T-alldvd
-lcm-dvd (.F , F-allmost) = (+ 1 , λ ()) , F-alldvd
-lcm-dvd (.(t₁ le val (+ 0)) , le-allmost {t₁} y) =  (+ 1 , λ ()) , le-alldvd
-lcm-dvd (.(t₁ eq val (+ 0)) , eq-allmost {t₁} y) =  (+ 1 , λ ()) , eq-alldvd
-lcm-dvd (.(not (t₁ eq val (+ 0))) , neq-allmost {t₁} y) =  (+ 1 , λ ()) , neq-alldvd
-lcm-dvd (.(k dvd t₁) , dvd-allmost {k} {t₁} y y') = (k , y) , dvd-alldvd y Pos.refl
-lcm-dvd (.(not (k dvd t₁)) , ndvd-allmost {k} {t₁} y y') = (k , y) , ndvd-alldvd y Pos.refl
-lcm-dvd (.(φ₁ and φ₂) , and-allmost {φ₁} {φ₂} y y') with lcm-dvd (φ₁ , y) | lcm-dvd (φ₂ , y')
-... | (σ₁ , not0₁) , h₁ | (σ₂ , not0₂) , h₂ with lcm₂ σ₁ σ₂
-... | σ , H with lcm₂-neq (σ₁ , not0₁) (σ₂ , not0₂) H | LCM.commonMultiple H
-... | not0 | P._,_ h h' = (+ σ , not0) , and-alldvd (alldvd-ext h₁ (+ σ , not0) h) (alldvd-ext h₂ (+ σ , not0) h')
-lcm-dvd (.(φ₁ or φ₂) , or-allmost {φ₁} {φ₂} y y') with lcm-dvd (φ₁ , y) | lcm-dvd (φ₂ , y')
-... | (σ₁ , not0₁) , h₁ | (σ₂ , not0₂) , h₂ with lcm₂ σ₁ σ₂
-... | σ , H with lcm₂-neq (σ₁ , not0₁) (σ₂ , not0₂) H | LCM.commonMultiple H
-... | not0 | P._,_ h h' = (+ σ , not0) , or-alldvd (alldvd-ext h₁ (+ σ , not0) h) (alldvd-ext h₂ (+ σ , not0) h')
+lcm-:∣′ : ∀ {n f} → Free0 {n} f → ∃ (λ k → All∣′ k f)
+lcm-:∣′ T        = (-, +[1+ 0 ]) , T
+lcm-:∣′ F        = (-, +[1+ 0 ]) , F
+lcm-:∣′ (e :≤0)  = (-, +[1+ 0 ]) , _ :≤0
+lcm-:∣′ (e :≡0)  = (-, +[1+ 0 ]) , _ :≡0
+lcm-:∣′ (e :≢0)  = (-, +[1+ 0 ]) , _ :≢0
+lcm-:∣′ (k :| e) = (-, k) , ∣′-refl [ k ]:| _
+lcm-:∣′ (k :|̸ e) = (-, k) , ∣′-refl [ k ]:|̸ _
+lcm-:∣′ (φ :∧ ψ) =
+  let ((k , k≠0) , φ′) = lcm-:∣′ φ; ((l , l≠0) , ψ′) = lcm-:∣′ ψ
+      (_ , lcm) = LCM.lcm ℤ.∣ k ∣ ℤ.∣ l ∣ in
+  (-, lcm≠0 k≠0 l≠0) , ∣m⇒∣′m (proj₁ (LCM.LCM.commonMultiple lcm)) ∣′-All∣′ φ′
+                    :∧ ∣m⇒∣′m (proj₂ (LCM.LCM.commonMultiple lcm)) ∣′-All∣′ ψ′
+lcm-:∣′ (φ :∨ ψ) =
+  let ((k , k≠0) , φ′) = lcm-:∣′ φ; ((l , l≠0) , ψ′) = lcm-:∣′ ψ
+      (_ , lcm) = LCM.lcm ℤ.∣ k ∣ ℤ.∣ l ∣ in
+  (-, lcm≠0 k≠0 l≠0) , ∣m⇒∣′m (proj₁ (LCM.LCM.commonMultiple lcm)) ∣′-All∣′ φ′
+                    :∨ ∣m⇒∣′m (proj₂ (LCM.LCM.commonMultiple lcm)) ∣′-All∣′ ψ′
 
-ℤ+-≡ : ∀ p q r → p ℤ+ q ≡ p ℤ+ r → q ≡ r
-ℤ+-≡ p q r H = subst₂ (λ u v → u ≡ v) (P.proj₁ ℤr.+-identity q) (P.proj₁ ℤr.+-identity r) (subst (λ u → u ℤ+ q ≡ u ℤ+ r) (ℤ+-opp-l p) (subst₂ (λ u v → u ≡ v) (sym (ℤr.+-assoc (- p) p q)) (sym (ℤr.+-assoc (- p) p r)) (ℤ+-left { - p} H)))
+⟦_mod-E_|:_[_]⟧ : ∀ {n t} → Unit-E {ℕ.suc n} t → (σ : Notnull) → ∀ k → k Zdiv.∣′ proj₁ σ →
+                  ∀ q x ρ → ⟦ k :| t ⟧ (x ∷ ρ) ↔ ⟦ k :| t ⟧ (q ℤ.* proj₁ σ ℤ.+ x ∷ ρ)
+⟦ val v             mod-E σ       |: k [ k∣σ ]⟧ q x ρ = ↔-refl
+⟦ varn p + e        mod-E σ , σ≠0 |: k [ k∣σ ]⟧ q x ρ = begin⟨ ↔-setoid ⟩
+  let t = toExp (Lin-E (ℕ.suc p)) e in
+  k Zdiv.∣′ ⟦ t ⟧e (x ∷ ρ) ≡⟨ cong (k Zdiv.∣′_) (lin-ext₁ e x (q ℤ.* σ ℤ.+ x) ρ) ⟩
+  k Zdiv.∣′ ⟦ t ⟧e (q ℤ.* σ ℤ.+ x ∷ ρ) ∎
+⟦ c [ prf ]*var0+ e mod-E σ , σ≠0 |: k [ k∣σ ]⟧ q x ρ = begin⟨ ↔-setoid ⟩
+  let t = toExp (Lin-E 1) e; qσ = q ℤ.* σ in
+  k Zdiv.∣′ c ℤ.* x ℤ.+ (⟦ t ⟧e (x ∷ ρ))
+    ≈⟨ ∣′m∣′n⇒∣′m+n (∣′n⇒∣′m*n c (∣′n⇒∣′m*n q k∣σ))
+     , flip ∣′m+n∣′m⇒∣′n (∣′n⇒∣′m*n c (∣′n⇒∣′m*n q k∣σ)) ⟩
+  k Zdiv.∣′ c ℤ.* qσ ℤ.+ (c ℤ.* x ℤ.+ (⟦ t ⟧e (x ∷ ρ)))
+      ≡⟨ cong (k Zdiv.∣′_) (sym (ZProp.+-assoc (c ℤ.* qσ) (c ℤ.* x) (⟦ t ⟧e (x ∷ ρ)))) ⟩
+  k Zdiv.∣′ (c ℤ.* qσ ℤ.+ c ℤ.* x) ℤ.+ (⟦ t ⟧e (x ∷ ρ))
+    ≡⟨ cong₂ (λ m n → k Zdiv.∣′ m ℤ.+ n) (sym (ZProp.*-distribˡ-+ c qσ x))
+                                        (lin-ext₁ e x (qσ ℤ.+ x) ρ) ⟩
+  k Zdiv.∣′ c ℤ.* (qσ ℤ.+ x) ℤ.+ (⟦ t ⟧e (q ℤ.* σ ℤ.+ x ∷ ρ)) ∎
 
+
+⟦_mod_⟧ : ∀ {n f σ} → Free0 {ℕ.suc n} f → All∣′ σ f →
+          ∀ q x ρ → ⟦ f ⟧ (x ∷ ρ) ↔ ⟦ f ⟧ (q ℤ.* proj₁ σ ℤ.+ x ∷ ρ)
+⟦ T      mod T               ⟧ q x ρ = ↔-refl
+⟦ F      mod F               ⟧ q x ρ = ↔-refl
+⟦ e :≤0  mod t :≤0           ⟧ q x ρ = {!!}
+⟦ e :≡0  mod t :≡0           ⟧ q x ρ = {!!}
+⟦ e :≢0  mod t :≢0           ⟧ q x ρ = {!!}
+⟦_mod_⟧ {σ = σ} (k :| e) (k|σ [ k≠0 ]:| t) q x ρ = ⟦ e mod-E σ |: _ [ k|σ ]⟧ q x ρ
+⟦_mod_⟧ {σ = σ} (k :|̸ e) (k|σ [ k≠0 ]:|̸ t) q x ρ = ↔¬ ⟦ e mod-E σ |: _ [ k|σ ]⟧ q x ρ
+⟦ φ :∧ ψ mod divφ :∧ divψ    ⟧ q x ρ = ⟦ φ mod divφ ⟧ q x ρ ↔× ⟦ ψ mod divψ ⟧ q x ρ
+⟦ φ :∨ ψ mod divφ :∨ divψ    ⟧ q x ρ = ⟦ φ mod divφ ⟧ q x ρ ↔⊎ ⟦ ψ mod divψ ⟧ q x ρ
+
+
+--  Af0-mod : ∀ {n} (φ : Af0 (ℕs n)) (σ : Dall (proj₁ φ)) k x ρ → [| proj₁ φ |] (x ∷ ρ) ↔ [| proj₁ φ |] ((x ℤ+ (k ℤ* (proj₁ (proj₁ σ)))) ∷ ρ)
+
+{-
 abstract
 
   dvd-mod : ∀ {n} (t : Une (ℕs n)) (σ k : Notnull) → (proj₁ k) ℤdvd (proj₁ σ) → ∀ k' x ρ → [| (proj₁ k) dvd (proj₁ t) |] (x ∷ ρ) ↔ [| (proj₁ k) dvd (proj₁ t) |] ((x ℤ+ (k' ℤ* proj₁ σ)) ∷ ρ)
