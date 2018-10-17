@@ -78,6 +78,10 @@ abstract
   Free0-Unit-E (val k)      = val k
   Free0-Unit-E (varn p + e) = varn p + e
 
+  Free0-Lin-E : ∀ {n e} → Free0-E {ℕ.suc n} e → ∃ λ p → Lin-E (ℕ.suc p) e
+  Free0-Lin-E (val k)      = 1 , val k
+  Free0-Lin-E (varn p + e) = p , e
+
   Free0-Unit : ∀ {n} {φ : form n} → Free0 φ → Unit φ
   Free0-Unit T        = T
   Free0-Unit F        = F
@@ -121,6 +125,6 @@ abstract
   σ∣′τ ∣′-All∣′ (p :∧ q)        = (σ∣′τ ∣′-All∣′ p) :∧ (σ∣′τ ∣′-All∣′ q)
   σ∣′τ ∣′-All∣′ (p :∨ q)        = (σ∣′τ ∣′-All∣′ p) :∨ (σ∣′τ ∣′-All∣′ q)
 
-  ∣′_∣′-All∣′ : ∀ {n σ φ} → All∣′ {n} σ φ → All∣′ ∣ σ ∣≠0 φ
-  ∣′ p ∣′-All∣′ = m∣′∣m∣ ∣′-All∣′ p
+  ∣_∣-All∣′ : ∀ {n σ φ} → All∣′ {n} σ φ → All∣′ ∣ σ ∣≠0 φ
+  ∣ p ∣-All∣′ = m∣′∣m∣ ∣′-All∣′ p
 
