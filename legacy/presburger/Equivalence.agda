@@ -30,6 +30,9 @@ P ↔ Q = (P → Q) × (P ← Q)
 ↔-refl : ∀ {P} → P ↔ P
 ↔-refl = id , id
 
+↔-sym : ∀ {P Q} → P ↔ Q → Q ↔ P
+↔-sym = Prod.swap
+
 deMorgan-¬× : ∀ {P Q} → Dec P → Dec Q → ¬ (P × Q) ↔ (¬ P ⊎ ¬ Q)
 proj₁ (deMorgan-¬× P? Q?) ¬p×q with P? | Q?
 ... | yes p | yes q = inj₁ (λ x → ¬p×q (x , q))
@@ -54,7 +57,6 @@ proj₂ (deMorgan-→ Q?) = [ flip contradiction , const ]′
 
 _⇒_ : ∀ {n}(φ₁ φ₂ : form n) → Set
 φ₁ ⇒ φ₂ = ∀ ρ → ⟦ φ₁ ⟧ ρ → ⟦ φ₂ ⟧ ρ
-
 
 _⇔_ : ∀ {n}(φ₁ φ₂ : form n) → Set
 φ₁ ⇔ φ₂ = ∀ ρ → ⟦ φ₁ ⟧ ρ ↔ ⟦ φ₂ ⟧ ρ
@@ -86,6 +88,6 @@ Setoid.Carrier       ↔-setoid = Set
 Setoid._≈_           ↔-setoid = _↔_
 Setoid.isEquivalence ↔-setoid = record
   { refl  = ↔-refl
-  ; sym   = Prod.swap
+  ; sym   = ↔-sym
   ; trans = uncurry λ f₁ f₂ → uncurry λ g₁ g₂ → g₁ ∘′ f₁ , f₂ ∘′ g₂
   }

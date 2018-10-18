@@ -1,21 +1,24 @@
 module Properties-prop where
 
+open import Representation
+open import Properties
+
 open import Data.Nat as ℕ
 open import Data.Nat.Properties
+import Data.Nat.Divisibility as Ndiv
+
 open import Data.Integer as ℤ
+open import Data.Integer.Divisibility as Zdiv
+open import Data.Integer.Divisibility.Properties
+
 open import Data.Fin as F
 open import Data.Empty
 open import Data.Product
 
-import Data.Nat.Divisibility as Ndiv
-open import Data.Integer.Divisibility as Zdiv
-open import Data.Integer.Divisibility.Properties
+open import Function
 
 open import Relation.Binary.PropositionalEquality
-
 open import Relation.Binary
-open import Representation
-open import Properties
 
 abstract
 
@@ -92,6 +95,9 @@ abstract
   Free0-Unit (k :|̸ e) = k :|̸ e
   Free0-Unit (p :∧ q) = Free0-Unit p :∧ Free0-Unit q
   Free0-Unit (p :∨ q) = Free0-Unit p :∨ Free0-Unit q
+
+  Free0-Lin : ∀ {n φ} → Free0 {ℕ.suc n} φ → Lin φ
+  Free0-Lin = Unit-Lin ∘′ Free0-Unit
 
 -----
 -- Lifting

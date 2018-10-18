@@ -17,11 +17,15 @@ open ≡-Reasoning
 
 -- Datatypes
 open import Data.Nat as ℕ using (ℕ)
-open import Data.Integer as ℤ using (ℤ)
-import Data.Integer.Divisibility as Zdiv
-import Data.Integer.Properties as ZProp
-open import Data.Fin as Fin using (Fin)
 import Data.Nat.Properties as NProp
+
+open import Data.Integer as ℤ using (ℤ)
+import Data.Integer.Properties as ZProp
+import Data.Integer.Divisibility as Zdiv
+import Data.Integer.Divisibility.Properties as ZdivProp
+
+open import Data.Fin as Fin using (Fin)
+
 open import Data.Product as Prod
 open import Data.Sum
 open import Data.Empty
@@ -158,19 +162,19 @@ open import Relation.Binary.SetoidReasoning renaming (_∎ to _✓; _≡⟨_⟩_
   ⟦ proj₁ (lin (t₁ :≢ t₂)) ⟧ ρ    ✓
 ⟦lin k :| t   ⟧ ρ with k ≠0?
 ... | inj₁ refl = begin⟨ ↔-setoid ⟩
-  ℤ.+ 0 Zdiv.∣ ⟦ t ⟧e ρ         ≈⟨ ZProp.∣n∣≡0⇒n≡0 ∘′ 0∣⇒≡0 , divides 0 ∘′ cong ℤ.∣_∣ ⟩
+  ℤ.+ 0 Zdiv.∣′ ⟦ t ⟧e ρ        ≈⟨ ZdivProp.0∣′⇒≡0 , Zdiv.divides (ℤ.+ 0) ⟩
   ⟦ t ⟧e ρ ≡ ℤ.+ 0              ≋⟨ cong (_≡ ℤ.+ 0) (⟦lin-E t ⟧ ρ) ⟩
   ⟦ lin-E t .proj₁ ⟧e ρ ≡ ℤ.+ 0 ✓
 ... | inj₂ k≠0  = begin⟨ ↔-setoid ⟩
-  k Zdiv.∣ ⟦ t ⟧e ρ              ≋⟨ cong (k Zdiv.∣_) (⟦lin-E t ⟧ ρ) ⟩
-  k Zdiv.∣ ⟦ lin-E t .proj₁ ⟧e ρ ✓
+  k Zdiv.∣′ ⟦ t ⟧e ρ              ≋⟨ cong (k Zdiv.∣′_) (⟦lin-E t ⟧ ρ) ⟩
+  k Zdiv.∣′ ⟦ lin-E t .proj₁ ⟧e ρ ✓
 ⟦lin k :|̸ t   ⟧ ρ with k ≠0?
-... | inj₁ refl = begin⟨ ↔-setoid ⟩
-  ¬ (ℤ.+ 0 Zdiv.∣ ⟦ t ⟧e ρ) ≈⟨ ↔¬ (ZProp.∣n∣≡0⇒n≡0 ∘′ 0∣⇒≡0 , divides 0 ∘′ cong ℤ.∣_∣) ⟩
-  ¬ (⟦ t ⟧e ρ ≡ ℤ.+ 0)      ≋⟨ cong (¬_ ∘′ (_≡ ℤ.+ 0)) (⟦lin-E t ⟧ ρ) ⟩
-  (¬ (⟦ lin-E t .proj₁ ⟧e ρ ≡ ℤ.+ 0)) ✓
-... | inj₂ k≠0  = begin⟨ ↔-setoid ⟩
-  ¬ (k Zdiv.∣ ⟦ t ⟧e ρ)                ≋⟨ cong (λ p → ¬ (k Zdiv.∣ p)) (⟦lin-E t ⟧ ρ) ⟩
-  (¬ (k Zdiv.∣ ⟦ lin-E t .proj₁ ⟧e ρ)) ✓
+... | inj₁ refl = ↔¬_ $′ begin⟨ ↔-setoid ⟩
+  ℤ.+ 0 Zdiv.∣′ ⟦ t ⟧e ρ ≈⟨ ZdivProp.0∣′⇒≡0 , Zdiv.divides (ℤ.+ 0) ⟩
+  ⟦ t ⟧e ρ ≡ ℤ.+ 0       ≋⟨ cong (_≡ ℤ.+ 0) (⟦lin-E t ⟧ ρ) ⟩
+  ⟦ lin-E t .proj₁ ⟧e ρ  ≡ ℤ.+ 0 ✓
+... | inj₂ k≠0  = ↔¬_ $′ begin⟨ ↔-setoid ⟩
+  k Zdiv.∣′ ⟦ t ⟧e ρ              ≋⟨ cong (k Zdiv.∣′_) (⟦lin-E t ⟧ ρ) ⟩
+  k Zdiv.∣′ ⟦ lin-E t .proj₁ ⟧e ρ ✓
 ⟦lin p :∧ q   ⟧ ρ = ⟦lin p ⟧ ρ ↔× ⟦lin q ⟧ ρ
 ⟦lin p :∨ q   ⟧ ρ = ⟦lin p ⟧ ρ ↔⊎ ⟦lin q ⟧ ρ
