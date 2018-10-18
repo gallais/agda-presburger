@@ -11,12 +11,15 @@ open import Data.Product as Prod
 open import Data.Empty
 open import Function
 
-open import Data.List.Any using (here; there; toSum)
-open import Data.List.Membership.Propositional
+open import Data.Vec.Properties
+open import Data.Vec.Any as Any using (Any; here; there)
+open import Data.Vec.Any.Properties
+open import Data.Vec.Membership.Propositional as Mem using (_∈_)
+open import Data.Vec.Membership.Propositional.Properties
 
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
-import Relation.Binary.SetoidReasoning as ≋-Reasoning
+import Relation.Binary.SetoidReasoning as ≋-Reasoning renaming (_≈⟨_⟩_ to _↔⟨_⟩_)
 
 open import Representation
 open import Properties
@@ -67,28 +70,32 @@ open import Normalization.Linearisation-prop
 ⟦⟨_/0⟩_⟧ {n} {p} {u} f (e :≤0) ρ = begin⟨ ↔-setoid ⟩
   let t = toExp (Lin-E 0) e; ρ′ = ℤ.+ 0 ∷ ρ in
   ⟦ t ⟧e (⟦ u ⟧e ρ′ ∷ ρ) ℤ.≤ ℤ.+ 0 ≡⟨ cong (ℤ._≤ ℤ.+ 0) (⟦⟨ f /0⟩-E⁻ e ⟧ ρ) ⟩
-  ⟦ proj₁ (⟨ f /0⟩ (e :≤0)) ⟧ ρ ∎ where open ≋-Reasoning
+  ⟦ proj₁ (⟨ f /0⟩ (e :≤0)) ⟧ ρ    ∎ where open ≋-Reasoning
 ⟦⟨_/0⟩_⟧ {n} {p} {u} f (e :≡0) ρ = begin⟨ ↔-setoid ⟩
   let t = toExp (Lin-E 0) e; ρ′ = ℤ.+ 0 ∷ ρ in
   ⟦ t ⟧e (⟦ u ⟧e ρ′ ∷ ρ) ≡ ℤ.+ 0 ≡⟨ cong (_≡ ℤ.+ 0) (⟦⟨ f /0⟩-E⁻ e ⟧ ρ) ⟩
-  ⟦ proj₁ (⟨ f /0⟩ (e :≡0)) ⟧ ρ ∎ where open ≋-Reasoning
-⟦⟨_/0⟩_⟧ {n} {p} {u} f (e :≢0) ρ = begin⟨ ↔-setoid ⟩
+  ⟦ proj₁ (⟨ f /0⟩ (e :≡0)) ⟧ ρ  ∎ where open ≋-Reasoning
+⟦⟨_/0⟩_⟧ {n} {p} {u} f (e :≢0) ρ = ↔¬_ $′ begin⟨ ↔-setoid ⟩
   let t = toExp (Lin-E 0) e; ρ′ = ℤ.+ 0 ∷ ρ in
-  ¬ (⟦ t ⟧e (⟦ u ⟧e ρ′ ∷ ρ) ≡ ℤ.+ 0) ≡⟨ cong (λ p → ¬ (p ≡ ℤ.+ 0)) (⟦⟨ f /0⟩-E⁻ e ⟧ ρ) ⟩
-  ⟦ proj₁ (⟨ f /0⟩ (e :≢0)) ⟧ ρ ∎ where open ≋-Reasoning
+  ⟦ t ⟧e (⟦ u ⟧e ρ′ ∷ ρ) ≡ ℤ.+ 0 ≡⟨ cong (_≡ ℤ.+ 0) (⟦⟨ f /0⟩-E⁻ e ⟧ ρ) ⟩
+  ⟦ proj₁ (⟨ f /0⟩ (e :≡0)) ⟧ ρ  ∎ where open ≋-Reasoning
 ⟦⟨_/0⟩_⟧ {n} {p} {u} f (k≠0 :| e) ρ = begin⟨ ↔-setoid ⟩
   let k = toℤ k≠0; t = toExp (Lin-E 0) e; ρ′ = ℤ.+ 0 ∷ ρ in
-  k Zdiv.∣ ⟦ t ⟧e (⟦ u ⟧e ρ′ ∷ ρ) ≡⟨ cong (k Zdiv.∣_) (⟦⟨ f /0⟩-E⁻ e ⟧ ρ) ⟩
+  k Zdiv.∣′ ⟦ t ⟧e (⟦ u ⟧e ρ′ ∷ ρ) ≡⟨ cong (k Zdiv.∣′_) (⟦⟨ f /0⟩-E⁻ e ⟧ ρ) ⟩
   ⟦ proj₁ (⟨ f /0⟩ (k≠0 :| e)) ⟧ ρ ∎ where open ≋-Reasoning
-⟦⟨_/0⟩_⟧ {n} {p} {u} f (k≠0 :|̸ e) ρ = begin⟨ ↔-setoid ⟩
+⟦⟨_/0⟩_⟧ {n} {p} {u} f (k≠0 :|̸ e) ρ = ↔¬_ $′ begin⟨ ↔-setoid ⟩
   let k = toℤ k≠0; t = toExp (Lin-E 0) e; ρ′ = ℤ.+ 0 ∷ ρ in
-  ¬ (k Zdiv.∣ ⟦ t ⟧e (⟦ u ⟧e ρ′ ∷ ρ)) ≡⟨ cong (λ p → ¬ (k Zdiv.∣ p)) (⟦⟨ f /0⟩-E⁻ e ⟧ ρ) ⟩
-  ⟦ proj₁ (⟨ f /0⟩ (k≠0 :|̸ e)) ⟧ ρ ∎ where open ≋-Reasoning
+  k Zdiv.∣′ ⟦ t ⟧e (⟦ u ⟧e ρ′ ∷ ρ) ≡⟨ cong (k Zdiv.∣′_) (⟦⟨ f /0⟩-E⁻ e ⟧ ρ) ⟩
+  ⟦ proj₁ (⟨ f /0⟩ (k≠0 :| e)) ⟧ ρ ∎ where open ≋-Reasoning
 ⟦⟨ f /0⟩ φ :∧ ψ ⟧ ρ = ⟦⟨ f /0⟩ φ ⟧ ρ ↔× ⟦⟨ f /0⟩ ψ ⟧ ρ
 ⟦⟨ f /0⟩ φ :∨ ψ ⟧ ρ = ⟦⟨ f /0⟩ φ ⟧ ρ ↔⊎ ⟦⟨ f /0⟩ ψ ⟧ ρ
 
+toSum : ∀ {a} {A : Set a} {p} {P : A → Set p} {x m} {xs : Vec A m} →
+        Any P (x ∷ xs) → P x ⊎ Any P xs
+toSum (here px) = inj₁ px
+toSum (there p) = inj₂ p
 
-⟦⋁_⟧ : ∀ {n} (φs : List (∃ (Lin {n}))) →
+⟦⋁_⟧ : ∀ {m n} (φs : Vec (∃ (Lin {n})) m) →
        ∀ ρ → ⟦ proj₁ (⋁ φs) ⟧ ρ ↔ (∃ λ φ → φ ∈ φs × ⟦ proj₁ φ ⟧ ρ)
 ⟦⋁ []     ⟧ ρ = ⊥-elim , λ ()
 ⟦⋁ φ ∷ φs ⟧ ρ = let ih = ⟦⋁ φs ⟧ ρ in
@@ -96,3 +103,33 @@ open import Normalization.Linearisation-prop
   , λ where (φ , φ∈φ∷φs , p) → [ (λ where refl → inj₁ p)
                                , (λ φ∈φs → inj₂ (proj₂ ih (-, φ∈φs , p)))
                                ]′ (toSum φ∈φ∷φs)
+
+
+⟦⋁[k<_]_⟧ : ∀ {n f} (σ : ℕ) (φ : Lin {ℕ.suc n} f) →
+            ∀ ρ → ⟦ proj₁ (⋁[k< σ ] φ) ⟧ ρ ↔ (∃ λ (k : Fin σ) → ⟦ f ⟧ (ℤ.+ (Fin.toℕ k) ∷ ρ))
+⟦⋁[k< σ ] φ ⟧ ρ = begin⟨ ↔-setoid ⟩
+  let f   = toForm Lin φ
+      toℤ = λ k → ℤ.pos (Fin.toℕ k)
+      φs  = Vec.map (λ k → ⟨ val (toℤ k) /0⟩ φ) (Vec.allFin σ) in
+  ⟦ proj₁ (⋁[k< σ ] φ) ⟧ ρ
+    ↔⟨ ⟦⋁ φs ⟧ ρ ⟩
+  ∃ (λ φ → φ ∈ φs × (⟦ proj₁ φ ⟧ ρ))
+    ↔⟨ (λ where (ψ , ψ∈ψs , prf) →
+                 let k = Any.index ψ∈ψs
+                     module Eq = ≡-Reasoning
+                     eq : ψ ≡ ⟨ val (toℤ (k)) /0⟩ φ
+                     eq = Eq.begin
+                       ψ
+                         Eq.≡⟨ lookup-index ψ∈ψs ⟩
+                       Vec.lookup (k) (Vec.map _ _)
+                         Eq.≡⟨ lookup-map k _ (Vec.allFin σ) ⟩
+                       ⟨ val (toℤ (Vec.lookup k (Vec.allFin σ))) /0⟩ φ
+                         Eq.≡⟨ cong (λ p → ⟨ val (toℤ p) /0⟩ φ) (lookup-allFin k) ⟩
+                       ⟨ val (toℤ k) /0⟩ φ
+                         Eq.∎
+                 in k , subst (⟦_⟧ ρ ∘′ proj₁) eq prf)
+     , (λ where (k , prf) → (⟨ val (toℤ k) /0⟩ φ) , ∈-map⁺ _ (∈-allFin⁺ k) , prf) ⟩
+  ∃ (λ (k : Fin σ) → ⟦ proj₁ (⟨ val {n₀ = 1} (toℤ k) /0⟩ φ) ⟧ ρ)
+    ↔⟨ Prod.map₂ (proj₂ (⟦⟨ val (toℤ _) /0⟩ φ ⟧ ρ))
+     , Prod.map₂ (proj₁ (⟦⟨ val (toℤ _) /0⟩ φ ⟧ ρ)) ⟩
+  ∃ (λ k → ⟦ f ⟧ (toℤ k ∷ ρ))          ∎ where open ≋-Reasoning

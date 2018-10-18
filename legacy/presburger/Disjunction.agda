@@ -1,9 +1,11 @@
 module Disjunction where
 
 open import Data.Nat as ℕ using (ℕ)
+open import Data.Integer as ℤ using (ℤ)
 open import Data.Fin as Fin using (Fin)
-open import Data.List as List
+open import Data.Vec as Vec
 open import Data.Product as Prod
+open import Function
 
 open import Relation.Binary.PropositionalEquality
 
@@ -15,8 +17,9 @@ open import Normalization.Unitarization
 
 infix 3 ⋁_
 
-⋁_ : ∀ {n} → List (∃ (Lin {n})) → ∃ (Lin {n})
-⋁_ = List.foldr (λ φ ψ → -, proj₂ φ :∨ proj₂ ψ) (-, F)
+⋁_ : ∀ {m n} → Vec (∃ (Lin {n})) m → ∃ (Lin {n})
+⋁_ = Vec.foldr _ (λ φ ψ → -, proj₂ φ :∨ proj₂ ψ) (-, F)
+
 
 lin-E⁻ : ∀ {n p e} → Lin-E {ℕ.suc n} (ℕ.suc p) e → ∃ (Lin-E {n} p)
 lin-E⁻ (val k)                       = -, val k
@@ -46,3 +49,8 @@ unit-E⁻ e = unit-E (proj₂ (div-E (proj₂ (lin-E⁻ e))))
 ⟨ f /0⟩ (k :|̸ e) = -, k :|̸ proj₂ (⟨ f /0⟩-E⁻ e)
 ⟨ f /0⟩ (φ :∧ ψ) = -, proj₂ (⟨ f /0⟩ φ) :∧ proj₂ (⟨ f /0⟩ ψ)
 ⟨ f /0⟩ (φ :∨ ψ) = -, proj₂ (⟨ f /0⟩ φ) :∨ proj₂ (⟨ f /0⟩ ψ)
+
+⋁[k<_]_ : ∀ {n φ} → ℕ → Lin {ℕ.suc n} φ → ∃ (Lin {n})
+⋁[k< σ ] φ = ⋁_
+           $ Vec.map (λ k → ⟨ (val {n₀ = 1} (ℤ.+ Fin.toℕ k)) /0⟩ φ)
+           $ Vec.allFin σ

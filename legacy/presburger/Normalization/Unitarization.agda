@@ -6,9 +6,13 @@ open import Normalization.Linearisation
 
 -- Datatypes
 open import Data.Nat as ℕ using (ℕ)
+import Data.Nat.Divisibility as Ndiv
+
 open import Data.Integer as ℤ using (ℤ)
 import Data.Integer.Properties as ZProp
-import Data.Nat.Divisibility as Ndiv
+import Data.Integer.Divisibility as Zdiv
+import Data.Integer.Divisibility.Properties as ZdivProp
+
 open import Data.Product as Prod
 open import Data.Empty
 import Data.Sign as S
@@ -21,12 +25,14 @@ open import Relation.Binary.PropositionalEquality
 unit-k : ∀ {σ n e} → Div-E σ {n} e → ℕ
 unit-k (val k)             = 1
 unit-k (c*varn p + e)      = 1
-unit-k (k [ k∣σ ]*var0+ e) = Ndiv.quotient k∣σ
+unit-k (k [ k∣σ ]*var0+ e) = Ndiv.quotient (ZdivProp.∣′m⇒∣m k∣σ)
 
 unit-k-pos : ∀ {σ n t} (e : Div-E σ {n} t) → unit-k e ≡ ℕ.suc (ℕ.pred (unit-k e))
 unit-k-pos (val k)             = refl
 unit-k-pos (c*varn p + e)      = refl
-unit-k-pos {σ} (k [ k∣σ ]*var0+ e) with Ndiv.quotient k∣σ | Ndiv._∣_.equality k∣σ
+unit-k-pos {σ} (k [ k∣σ ]*var0+ e)
+  with Ndiv.quotient (ZdivProp.∣′m⇒∣m k∣σ)
+     | Ndiv._∣_.equality (ZdivProp.∣′m⇒∣m k∣σ)
 ... | ℕ.zero  | eq = ⊥-elim (to≢0 (proj₂ σ) (ZProp.∣n∣≡0⇒n≡0 eq))
 ... | ℕ.suc p | eq = refl
 
@@ -40,8 +46,8 @@ unit-E (val k)                = -, val k
 unit-E (c*varn p + e)         = -, varn p + e
 unit-E {σ , σ≠0} (k [ k∣σ ]*var0+ e) =
   let s = ℤ.sign k S.* ℤ.sign σ
-      q = Ndiv.quotient k∣σ
-  in -, (s ℤ.◃ 1) [ ZProp.abs-◃ s 1 ]*var0+ proj₂ ((ℤ.+ q) *E e)
+      q = Ndiv.quotient (ZdivProp.∣′m⇒∣m k∣σ)
+  in -, (s ℤ.◃ 1) [ fromAbs (ZProp.abs-◃ s 1) ]*var0+ proj₂ ((ℤ.+ q) *E e)
 
 unit : ∀ {σ n φ} → Div {n} σ φ → ∃ (Unit {n})
 unit T        = -, T

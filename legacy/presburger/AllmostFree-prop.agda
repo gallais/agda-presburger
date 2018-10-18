@@ -3,6 +3,8 @@ module AllmostFree-prop where
 open import Representation
 open import Properties
 open import Properties-prop
+open import Disjunction
+open import Disjunction-prop
 open import Semantics
 open import Semantics-prop
 open import Equivalence
@@ -21,6 +23,7 @@ import Data.Integer.Properties as ZProp
 open import Data.Fin as Fin using (Fin)
 import Data.Fin.Properties as FProp
 
+import Data.List as List
 open import Data.Product as Prod
 open import Data.Vec
 open import Function
@@ -28,7 +31,7 @@ open import Function
 open import Function
 open import Relation.Nullary.Decidable
 open import Relation.Binary.PropositionalEquality
-import Relation.Binary.SetoidReasoning as ≋-Reasoning
+import Relation.Binary.SetoidReasoning as ≋-Reasoning renaming (_≈⟨_⟩_ to _↔⟨_⟩_)
 
 
 lcm-:∣′ : ∀ {n f} → Free0 {n} f → ∃ (λ k → All∣′ k f)
@@ -60,10 +63,10 @@ lcm-:∣′ (φ :∨ ψ) =
 ⟦ c [ prf ]*var0+ e mod-E σ , σ≠0 |: k [ k∣σ ]⟧ q x ρ = begin⟨ ↔-setoid ⟩
   let t = toExp (Lin-E 1) e; qσ = q ℤ.* σ in
   k Zdiv.∣′ c ℤ.* x ℤ.+ (⟦ t ⟧e (x ∷ ρ))
-    ≈⟨ ∣′m∣′n⇒∣′m+n (∣′n⇒∣′m*n c (∣′n⇒∣′m*n q k∣σ))
+    ↔⟨ ∣′m∣′n⇒∣′m+n (∣′n⇒∣′m*n c (∣′n⇒∣′m*n q k∣σ))
      , flip ∣′m+n∣′m⇒∣′n (∣′n⇒∣′m*n c (∣′n⇒∣′m*n q k∣σ)) ⟩
   k Zdiv.∣′ c ℤ.* qσ ℤ.+ (c ℤ.* x ℤ.+ (⟦ t ⟧e (x ∷ ρ)))
-      ≡⟨ cong (k Zdiv.∣′_) (sym (ZProp.+-assoc (c ℤ.* qσ) (c ℤ.* x) (⟦ t ⟧e (x ∷ ρ)))) ⟩
+    ≡⟨ cong (k Zdiv.∣′_) (sym (ZProp.+-assoc (c ℤ.* qσ) (c ℤ.* x) (⟦ t ⟧e (x ∷ ρ)))) ⟩
   k Zdiv.∣′ (c ℤ.* qσ ℤ.+ c ℤ.* x) ℤ.+ (⟦ t ⟧e (x ∷ ρ))
     ≡⟨ cong₂ (λ m n → k Zdiv.∣′ m ℤ.+ n) (sym (ZProp.*-distribˡ-+ c qσ x))
                                         (lin-ext₁ e x (qσ ℤ.+ x) ρ) ⟩
@@ -120,9 +123,15 @@ lcm-:∣′ (φ :∨ ψ) =
      $′ subst (λ x → ⟦ _ ⟧ (x ∷ ρ)) eq
      ⟦f⟧k∷ρ
 
-{-
 
-  Af0-Fin-reduc : ∀ {n} (φ : Af0 (ℕs n)) (σ : Dall (proj₁ φ)) ρ → P.∃ (λ x → [| proj₁ φ |] (x ∷ ρ)) ↔ [| proj₁ (Finite-disjunction {_} {_} {0} (proj₁ φ , (isunitary-islin ∘ allmost-free0-isunitary) (proj₂ φ)) (Vmap (λ u → (val (+ toℕ u) , val-islinn-i)) (allFin ((∣′_∣′ ∘ proj₁ ∘ proj₁) σ)))) |] ρ
-  Af0-Fin-reduc {n} φ σ ρ with Finite-disjunction-sem {_} {_} {0} (proj₁ φ , isunitary-islin (allmost-free0-isunitary (proj₂ φ))) (Vmap (λ u → val (+ toℕ u) , val-islinn-i) (allFin ∣′ proj₁ (proj₁ σ) ∣′)) ρ | Af0-Fin-equiv₁ φ σ ρ
-  ... | P._,_ P₁ Q₁ | PQ = P._,_ (λ h → Q₁ (P._,_ (P.proj₁ (PQ h)) (subst (λ u → [| proj₁ φ |] ([| proj₁ u |]e (+ 0 ∷ ρ) ∷ ρ)) (Fin-Vmap-compat {_} {_} {Lin′ (ℕs n) 1} (λ (u : Fin ((∣′_∣′ ∘ proj₁ ∘ proj₁) σ)) → (val (+ toℕ u) , val-islinn-i)) (allFin ((∣′_∣′ ∘ proj₁ ∘ proj₁) σ)) (P.proj₁ (PQ h))) (subst (λ u → [| proj₁ φ |] ([| val (+ toℕ u) |]e (+ 0 ∷ ρ) ∷ ρ)) (sym (allFin-inv (P.proj₁ (PQ h)))) (P.proj₂ (PQ h)))))) (λ h → P.proj₂ (Af0-Fin-equiv φ σ ρ) (P._,_ (P.proj₁ (P₁ h)) (subst (λ u → [| proj₁ φ |] ([| val (+ toℕ u) |]e (+ 0 ∷ ρ) ∷ ρ)) (allFin-inv (P.proj₁ (P₁ h))) (subst (λ u → [| proj₁ φ |] ([| proj₁ u |]e (+ 0 ∷ ρ) ∷ ρ)) (sym (Fin-Vmap-compat {_} {_} {Lin′ (ℕs n) 1} (λ (u : Fin ((∣′_∣′ ∘ proj₁ ∘ proj₁) σ)) → (val (+ toℕ u) , val-islinn-i)) (allFin ((∣′_∣′ ∘ proj₁ ∘ proj₁) σ)) (P.proj₁ (P₁ h)))) (P.proj₂ (P₁ h))))))
--}
+⟦⋁_when_:|_⟧_ : ∀ {n f} (φ : Free0 {ℕ.suc n} f) (σ : Notnull) → All∣′ σ f → ∀ ρ →
+                ∃ (λ (x : ℤ) → ⟦ f ⟧ (x ∷ ρ))
+              ↔ ⟦ proj₁ (⋁[k< ℤ.∣ proj₁ σ ∣ ] Free0-Lin φ) ⟧ ρ
+⟦⋁ φ when σ :| divφ ⟧ ρ = begin⟨ ↔-setoid ⟩
+  let f = toForm Free0 φ in
+  ∃ (λ x → ⟦ f ⟧ (x ∷ ρ))
+    ↔⟨ ⟦finite φ when σ :| divφ ⟧ ρ ⟩
+  ∃ (λ k → ⟦ f ⟧ (ℤ.pos (Fin.toℕ k) ∷ ρ))
+    ↔⟨ ↔-sym (⟦⋁[k< ℤ.∣ proj₁ σ ∣ ] Free0-Lin φ ⟧ ρ) ⟩
+  ⟦ proj₁ (⋁[k< ℤ.∣ proj₁ σ ∣ ] Free0-Lin φ) ⟧ ρ
+    ∎ where open ≋-Reasoning
