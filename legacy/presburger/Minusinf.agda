@@ -1,13 +1,17 @@
 module Minusinf where
 
 open import Data.Nat as ℕ using (ℕ)
+
 open import Data.Integer as ℤ using (ℤ)
 import Data.Integer.Properties as ZProp
+import Data.Integer.DivMod as ZDM
+
 open import Data.Empty
 open import Data.Product as Prod
 open import Data.Vec as Vec
 open import Function
 
+open import Relation.Nullary.Decidable
 open import Relation.Binary.PropositionalEquality
 
 open import Representation
@@ -16,6 +20,7 @@ open import Semantics
 open import Semantics-prop
 open import Equivalence
 open import Comparisons
+open import AllmostFree-prop
 
 pattern :-1 = ℤ.-[1+ 0 ]
 pattern :+0 = ℤ.+ 0
@@ -123,19 +128,29 @@ cooper-bound (φ :∨ ψ) x ρ x≤lb = cooper-bound φ x ρ (ZProp.≤-trans x�
                       ↔⊎ cooper-bound ψ x ρ (ZProp.≤-trans x≤lb (ZProp.m⊓n≤n _ _))
 
 
-cooper : ∀ {n f} (φ : Unit {ℕ.suc n} f) x ρ →
+⟦var0⟶-∞_⟧ : ∀ {n f} (φ : Unit {ℕ.suc n} f) {x} ρ →
          ⟦ proj₁ (var0⟶-∞ φ) ⟧ (x ∷ ρ) → (∃ λ x → ⟦ f ⟧ (x ∷ ρ))
-cooper φ x ρ prf with ℤcompare x (bound φ ρ)
+⟦var0⟶-∞ φ ⟧ {x} ρ prf with ℤcompare x (bound φ ρ)
 ... | less    x<lb = -, proj₂ (cooper-bound φ x ρ (ZProp.<⇒≤ x<lb)) prf
 ... | equal   x≡lb = -, proj₂ (cooper-bound φ x ρ (ZProp.≤-reflexive x≡lb)) prf
-... | greater x>lb = -, proj₂ (cooper-bound φ {!!} ρ {!!}) {!!}
+... | greater x>lb = -, proj₂ (cooper-bound φ x′ ρ x′≤lb) (proj₁ prf′ prf) where
 
-{-
-cooper₂-simpl : ∀ {n} (φ : Unf (ℕs n)) ρ x → [| proj₁ (minusinf φ) |] (x ∷ ρ) → P.∃ (λ x → [| proj₁ φ |] (x ∷ ρ))
-cooper₂-simpl φ ρ x H with ℤcompare x (bound-inf φ ρ)
-cooper₂-simpl φ ρ x H | less y = P._,_ x (P.proj₂ (cooper₂ φ ρ x (ℤ≤.trans (nℤ≤sn x) y)) H)
-cooper₂-simpl φ ρ .(bound-inf φ ρ) H | equal refl = P._,_ (bound-inf φ ρ) (P.proj₂ (cooper₂ φ ρ (bound-inf φ ρ) ℤ≤.refl) H)
-cooper₂-simpl φ ρ x H | greater y with lcm-dvd (minusinf φ)
-... | ((δ , neq) , Hdiv) with ℤ≤-reachability x (bound-inf φ  ρ) (δ , neq) (ℤ≤.trans (nℤ≤sn (bound-inf φ ρ)) y)
-... | P._,_ k Hk = P._,_ (x ℤ- ((+ k) ℤ* + ∣ δ ∣)) (P.proj₂ (cooper₂ φ ρ (x ℤ- ((+ k) ℤ* + ∣ δ ∣)) Hk) (subst (λ u → [| proj₁ (minusinf φ) |] (u ∷ ρ)) (sym (unfold-ℤ- x ((+ k) ℤ* + ∣ δ ∣))) (subst (λ u → [| proj₁ (minusinf φ) |] (x ℤ+ u ∷ ρ)) (sym (-distr-ℤ*-l (+ k) (+ ∣ δ ∣))) (P.proj₁ (Af0-mod (minusinf φ) ((abs-Notnull (δ , neq)) , alldvd-abs Hdiv) (- (+ k)) x ρ) H))))
--}
+   lb    = bound φ ρ
+   ψ     = proj₂ (var0⟶-∞ φ)
+   Σσ≠0  = proj₁ (lcm-:∣′ ψ)
+   σ     = proj₁ Σσ≠0
+   σ≠0   = proj₂ Σσ≠0
+   σ|ψ   = proj₂ (lcm-:∣′ ψ)
+   ∣σ∣≠0 = to≢0 σ≠0 ∘′ ZProp.∣n∣≡0⇒n≡0
+   q     = ((bound φ ρ ℤ.- x) ZDM.div σ) {fromWitnessFalse ∣σ∣≠0}
+   x′    = q ℤ.* σ ℤ.+ x
+   qσ≤   : (lb ℤ.- x) ZDM.div σ ℤ.* σ ℤ.≤ lb ℤ.- x
+   qσ≤   = ZDM.[n/d]*d≤n (lb ℤ.- x) σ
+   x′≤lb : x′ ℤ.≤ lb
+   x′≤lb = begin
+     q ℤ.* σ ℤ.+ x        ≤⟨ ZProp.+-monoˡ-≤ x qσ≤ ⟩
+     lb ℤ.- x ℤ.+ x       ≡⟨ ZProp.+-assoc lb (ℤ.- x) x ⟩
+     lb ℤ.+ (ℤ.- x ℤ.+ x) ≡⟨ cong (ℤ._+_ lb) (ZProp.+-inverseˡ x) ⟩
+     lb ℤ.+ ℤ.+ 0         ≡⟨ ZProp.+-identityʳ lb ⟩
+     lb                   ∎ where open ZProp.≤-Reasoning
+   prf′  = ⟦ ψ mod σ|ψ ⟧ q x ρ
