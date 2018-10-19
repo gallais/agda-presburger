@@ -16,7 +16,7 @@ import Data.Nat.Properties as NProp
 
 open import Data.Integer as ℤ using (ℤ)
 import Data.Integer.Divisibility as Zdiv
-open import Data.Integer.DivMod
+open import Data.Integer.DivMod as ZDM using (_modℕ_; _divℕ_)
 open import Data.Integer.Divisibility.Properties
 import Data.Integer.Properties as ZProp
 
@@ -103,14 +103,14 @@ lcm-:∣′ (φ :∨ ψ) =
         divφ′ : All∣′ (ℤ.+ d , +[1+ _ ]) _
         divφ′ = subst (σ Zdiv.∣′_) (sym $ cong ℤ.pos d≡d') m∣′∣m∣ ∣′-All∣′ divφ
         q     = x divℕ d
-        r<d   = n%d<d x (ℕ.pred ℤ.∣ σ ∣)
+        r<d   = ZDM.n%ℕd<d x (ℕ.pred ℤ.∣ σ ∣)
         r     = Fin.fromℕ≤ r<d
         r-eq  : ∀ {d'} → (eq : d ≡ d') → Fin.toℕ (subst Fin eq r) ≡ Fin.toℕ r
         r-eq  = λ where refl → refl
         eq    : x ≡ q ℤ.* ℤ.+ d ℤ.+ ℤ.+ (Fin.toℕ r)
         eq    = let open ≡-Reasoning in begin
                 x
-                  ≡⟨ a≡a%n+[a/n]*n x (ℕ.pred d) ⟩
+                  ≡⟨ ZDM.a≡a%ℕn+[a/ℕn]*n x (ℕ.pred d) ⟩
                 ℤ.+ (x modℕ d) ℤ.+ x divℕ d ℤ.* ℤ.+ d
                   ≡⟨ cong (λ r → ℤ.+ r ℤ.+ q ℤ.* ℤ.+ d) (sym (FProp.toℕ-fromℕ≤ r<d)) ⟩
                 ℤ.+ Fin.toℕ r ℤ.+ x divℕ d ℤ.* ℤ.+ d
