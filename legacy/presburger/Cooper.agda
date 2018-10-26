@@ -166,47 +166,6 @@ step-cooper₁ {σ = σ , σ≠0} (:-1 [ ∣-1∣ ]*var0+ e :≤0) divφ x ρ ¬
      ⟦ proj₁ e-1 ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j
        ∎ where open ≡-Reasoning
 
-{-
-   ⋯-x≡0 : ⟦t⟧ x ℤ.+ (ℤ.+ Fin.toℕ j) ℤ.- x ≡ ℤ.+ 0
-   ⋯-x≡0 = begin
-     ⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ j ℤ.- x
-       ≡⟨ ZProp.+-comm (⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ j) (ℤ.- x) ⟩
-     ℤ.- x ℤ.+ (⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ j)
-       ≡⟨ sym (ZProp.+-assoc (ℤ.- x) (⟦t⟧ x) (ℤ.+ Fin.toℕ j)) ⟩
-     ℤ.- x ℤ.+ ⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ j
-       ≡⟨ cong₂ (λ a b → a ℤ.+ ⟦t⟧ x ℤ.+ ℤ.+ b)
-                (sym (ZProp.-1*n≡-n x))
-                (FProp.toℕ-cast (cong ℕ.suc $ cong ℤ.∣_∣ eq) k) ⟩
-     :-1 ℤ.* x ℤ.+ ⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ k
-       ≡⟨ proj₂ int ⟩
-     ℤ.+ 0 ∎ where open ≡-Reasoning
-
-   x≡⋯ : x ≡ ⟦ proj₁ e-1 ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j
-   x≡⋯ = begin
-     x ≡⟨ sym (ZProp.m-n≡0⇒m≡n (⟦t⟧ x ℤ.+ (ℤ.+ Fin.toℕ j)) x ⋯-x≡0) ⟩
-     ⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ j ≡⟨ {!!} ⟩
-     {!!} ≡⟨ {!!} ⟩
-     ⟦t⟧ :+0 ℤ.+ :-1 ℤ.+ ℤ.+ Fin.toℕ j
-       ≡⟨ cong (ℤ._+ ℤ.+ Fin.toℕ j) (⟦ e ⟧+E⟦ val :-1 ⟧ (:+0 ∷ ρ)) ⟩
-     ⟦ proj₁ e-1 ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j ∎ where open ≡-Reasoning
-
-
--}
-{- 
-  ... | P._,_ j Hj with  lin-plus (t , y') (val -[1+ 0 ] , val-islinn-i) | lin-plus-sem (t , y') (val -[1+ 0 ] , val-islinn-i) (+ 0 ● ρ)
-  ... | e | Heq = ⊥-elim
-
-  (¬H (P._,_ j
-      (P._,_ e
-     (P._,_ here
-    (subst (λ u → x ≡ u ℤ+ + toℕ j) Heq
-    (tmp (subst (λ u → - x ℤ+ (u ℤ+ + toℕ j) ≡ + 0)
-    (unfold-ℤ- ([| t |]e (+ 0 ●  ρ)) (+ 1))
-     (subst₂ (λ u v → - x ℤ+ (u ℤ- + 1 ℤ+ + toℕ j) ≡ v)
-     (context-simpl (t , y') x (+ 0) ρ) Hj
-     (sym (ℤr.+-assoc (- x) ([| t |]e (x ● ρ) ℤ- + 1) (+ toℕ j)))))))))))
-
--}
 -- :≡0
 step-cooper₁ (val k :≡0) divφ x ρ ¬H = id
 step-cooper₁ {σ = σ , _} (varn p + e        :≡0) divφ x ρ ¬H pr = begin
