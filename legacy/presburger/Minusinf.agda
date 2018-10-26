@@ -129,7 +129,7 @@ cooper-bound (φ :∨ ψ) x ρ x≤lb = cooper-bound φ x ρ (ZProp.≤-trans x�
 
 
 ⟦var0⟶-∞_⟧ : ∀ {n f} (φ : Unit {ℕ.suc n} f) {x} ρ →
-         ⟦ proj₁ (var0⟶-∞ φ) ⟧ (x ∷ ρ) → (∃ λ x → ⟦ f ⟧ (x ∷ ρ))
+             ⟦ proj₁ (var0⟶-∞ φ) ⟧ (x ∷ ρ) → (∃ λ x → ⟦ f ⟧ (x ∷ ρ))
 ⟦var0⟶-∞ φ ⟧ {x} ρ prf with ℤcompare x (bound φ ρ)
 ... | less    x<lb = -, proj₂ (cooper-bound φ x ρ (ZProp.<⇒≤ x<lb)) prf
 ... | equal   x≡lb = -, proj₂ (cooper-bound φ x ρ (ZProp.≤-reflexive x≡lb)) prf

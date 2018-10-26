@@ -7,93 +7,311 @@ open import Normalization.Linearisation
 open import Normalization.Linearisation-prop
 open import Semantics
 open import Semantics-prop
--- open import AllmostFree-prop using (lcm-dvd ; dvd-mod)
+open import Equivalence
+open import Minusinf
+open import AllmostFree-prop
 open import Bset
+open import Interval
 
-open import Fin-prop
-open import List-tools using (_∈_ ; ∈-ext₁ ; ∈-ext₂ ; b∈[]-elim ; b∈L-elim ; here ; there)
+open import Data.List.Any using (here; there)
+open import Data.List.Membership.Propositional
+open import Data.List.Membership.Propositional.Properties
 
 open import Data.Nat as ℕ using (ℕ)
+import Data.Nat.Properties as NProp
+
 open import Data.Integer as ℤ using (ℤ)
+import Data.Integer.Properties as ZProp
+import Data.Integer.Divisibility.Properties as ZdivProp
+import Algebra.Properties.Ring ZProp.+-*-ring as APR
+
 open import Data.Fin as Fin using (Fin)
+import Data.Fin.Properties as FProp
 
-{-
 open import Data.Empty
-open import Data.Unit
-import Data.Product as P
-open import Product
-open import Data.Sum
-open import Data.Vec hiding (_++_ ; [_] ; _∈_) renaming (_∷_ to _●_)
-open import Data.List hiding (and ; or)
-open import Data.Integer.Divisibility
-
-open import Relation.Binary.PropositionalEquality
-open import Relation.Binary
-open import Relation.Nullary
-
-open import Comparisons using (ℤcompare ; less ; equal ; greater)
-open import Decidability using (Fin-dec)
-open import Minusinf using (minusinf ; alldvd-and-l ; alldvd-and-r ; alldvd-or-l ; alldvd-or-r ; bound-inf ; cooper₂)
+open import Data.Product as Prod
+open import Data.Sum as Sum
+open import Data.Vec
 
 open import Function
+open import Relation.Nullary
+open import Relation.Nullary.Negation
+open import Relation.Binary.PropositionalEquality
 
-open import Algebra.Structures
+step-cooper₁ :
+  ∀ {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣′ σ f) x ρ →
+  (¬H : ¬ (Σ (Fin (ℕ.suc ℤ.∣ proj₁ σ ∣) × ∃ (Lin-E 1)) $ uncurry λ j b →
+             b ∈ (bset φ)
+           × (x ≡ (⟦ proj₁ b ⟧e ((ℤ.+ 0) ∷ ρ)) ℤ.+ (ℤ.+ Fin.toℕ j)))) →
+  ⟦ f ⟧ (x ∷ ρ) → ⟦ f ⟧ (x ℤ.- ℤ.+ ℤ.∣ proj₁ σ ∣ ∷ ρ)
+step-cooper₁ T divφ x ρ ¬H = _
+step-cooper₁ F divφ x ρ ¬H = id
+-- :≤0
+step-cooper₁ (val k :≤0) divφ x ρ ¬H = id
+step-cooper₁ {σ = σ , _} (varn p + e :≤0) divφ x ρ ¬H pr = begin
+  let t = toExp (Lin-E (ℕ.suc p)) e; x-∣σ∣ = x ℤ.- ℤ.+ ℤ.∣ σ ∣ in
+  ⟦ t ⟧e (x-∣σ∣ ∷ ρ) ≡⟨ lin-ext₁ e x-∣σ∣ x ρ ⟩
+  ⟦ t ⟧e (x ∷ ρ)     ≤⟨ pr ⟩
+  ℤ.+ 0              ∎ where open ZProp.≤-Reasoning
+step-cooper₁ {σ = σ , _} (:+1 [ ∣+1∣ ]*var0+ e :≤0) divφ x ρ ¬H pr = begin
+  let t = toExp (Lin-E 1) e; ⟦t⟧ = λ x → ⟦ t ⟧e (x ∷ ρ)
+      x' = ℤ.+ 1 ℤ.* x; x-∣σ∣ = x ℤ.- ℤ.+ ℤ.∣ σ ∣ in
+  ℤ.+ 1 ℤ.* x-∣σ∣ ℤ.+ ⟦t⟧ x-∣σ∣
+    ≤⟨ ZProp.+-monoˡ-≤ (⟦t⟧ x-∣σ∣) $ ZProp.*-monoˡ-≤-pos 0 $ ZProp.m-n≤m x ℤ.∣ σ ∣ ⟩
+  x' ℤ.+ ⟦t⟧ x-∣σ∣
+    ≡⟨ cong (ℤ._+_ x') (lin-ext₁ e x-∣σ∣ x ρ) ⟩
+  x' ℤ.+ ⟦t⟧ x
+    ≤⟨ pr ⟩
+  ℤ.+ 0
+    ∎ where open ZProp.≤-Reasoning
+step-cooper₁ {σ = σ , σ≠0} (:-1 [ ∣-1∣ ]*var0+ e :≤0) divφ x ρ ¬H pr
+  with ℤ.- x ℤ.+ ℤ.+ ℤ.∣ σ ∣ ℤ.+ ⟦ toExp (Lin-E 1) e ⟧e (x ∷ ρ) ZProp.≤? :+0
+... | yes le = begin
+  :-1 ℤ.* x-∣σ∣ ℤ.+ ⟦t⟧ x-∣σ∣
+    ≡⟨ cong₂ ℤ._+_ (ZProp.*-distribˡ-+ :-1 x -∣σ∣) (lin-ext₁ e x-∣σ∣ x ρ) ⟩
+  :-1 ℤ.* x ℤ.+ :-1 ℤ.* -∣σ∣ ℤ.+ ⟦t⟧ x
+    ≡⟨ cong₂ (λ m n → m ℤ.+ n ℤ.+ ⟦t⟧ x) (ZProp.-1*n≡-n x) (ZProp.-1*n≡-n -∣σ∣) ⟩
+  ℤ.- x ℤ.+ ℤ.- -∣σ∣ ℤ.+ ⟦t⟧ x
+    ≡⟨ cong (λ t →   ℤ.- x ℤ.+ t ℤ.+ ⟦t⟧ x) (ZProp.neg-involutive +∣σ∣) ⟩
+  ℤ.- x ℤ.+ +∣σ∣ ℤ.+ ⟦t⟧ x
+    ≤⟨ le ⟩
+  :+0 ∎ where
 
-private module ℤr = IsCommutativeRing IntProp.isCommutativeRing
-private module ℤ≤ = DecTotalOrder Int.decTotalOrder
+  open ZProp.≤-Reasoning
+  +∣σ∣  = ℤ.+ ℤ.∣ σ ∣
+  -∣σ∣  = ℤ.- +∣σ∣
+  x-∣σ∣ = x ℤ.+ -∣σ∣
+  t     = toExp (Lin-E 1) e
+  ⟦t⟧   = λ x → ⟦ t ⟧e (x ∷ ρ)
 
-abstract
-  neg-proj₁ : ∀ {A : Set} {n} (l₁ l₂ : List A) (P : Fin n → A → Set) → (P.∃ (λ (j : Fin n) → P.∃ (λ b → P.Σ (b ∈ (l₁ ++ l₂)) (λ _ → P j b))) → ⊥) → P.∃ (λ (j : Fin n) → P.∃ (λ b → P.Σ (b ∈ l₁) (λ _ → P j b))) → ⊥
-  neg-proj₁ l₁ l₂ P H Hf = H (P._,_ (P.proj₁ Hf) (P._,_ (P.proj₁ (P.proj₂ Hf)) (P._,_ (∈-ext₁ (P.proj₁ (P.proj₂ Hf)) l₁ l₂ ((P.proj₁ ∘ P.proj₂ ∘ P.proj₂) Hf)) ((P.proj₂ ∘ P.proj₂ ∘ P.proj₂) Hf))))
+... | no ¬le = ⊥-elim $ ¬H ((j , e +E val :-1) , here refl , {!!}) where
 
-  neg-proj₂ : ∀ {A : Set} {n} (l₁ l₂ : List A) (P : Fin n → A → Set) → (P.∃ (λ (j : Fin n) → P.∃ (λ b → P.Σ (b ∈ (l₁ ++ l₂)) (λ _ → P j b))) → ⊥) → P.∃ (λ (j : Fin n) → P.∃ (λ b → P.Σ (b ∈ l₂) (λ _ → P j b))) → ⊥
-  neg-proj₂ l₁ l₂ P H Hf = H (P._,_ (P.proj₁ Hf) (P._,_ (P.proj₁ (P.proj₂ Hf)) (P._,_ (∈-ext₂ (P.proj₁ (P.proj₂ Hf)) l₁ l₂ ((P.proj₁ ∘ P.proj₂ ∘ P.proj₂) Hf)) ((P.proj₂ ∘ P.proj₂ ∘ P.proj₂) Hf))))
+   lt   = ZProp.≰→> ¬le
+   t    = toExp (Lin-E 1) e
+   -x   = ℤ.- x
+   +∣σ∣ = ℤ.+ ℤ.∣ σ ∣
+   ⟦t⟧  = λ x → ⟦ t ⟧e (x ∷ ρ)
+   e-1  = e +E val :-1
 
-  tmp : ∀ {x p} → - x ℤ+ p ≡ + 0 → x ≡ p
-  tmp { -[1+ n ]} { -[1+ n' ]} H = cong -[1+_] (⊖-opp-simpl H)
-  tmp { -[1+ n ]} {+ n'} ()
-  tmp {+ zero} { -[1+ n' ]} ()
-  tmp {+ ℕs n} { -[1+ n' ]} ()
-  tmp {+ zero} {+ .0} refl = refl
-  tmp {+ ℕs n} {+ zero} ()
-  tmp {+ ℕs n} {+ ℕs n'} H = cong (λ u → + ℕs u) (sym (⊖-opp-simpl H))
+   bd = :-1 ℤ.+ (-x ℤ.+ ⟦t⟧ x)
 
-  step-cooper₁ : ∀ {n} (φ : Unf (ℕs n)) (δ : Dall ((proj₁ ∘ minusinf) φ)) (x : ℤ) (ρ : Vec ℤ n) (¬H : (P.∃ (λ (j : Fin (ℕs (δ-extract δ))) → P.∃ (λ b → P.Σ (b ∈ (bset φ)) (λ _ → x ≡ ([| proj₁ b |]e ((+ 0) ● ρ)) ℤ+ (+ toℕ j))))) → ⊥) (Pr : [| proj₁ φ |] (x ● ρ)) → [| proj₁ φ |] ((x ℤ- (+ (δ-extract δ))) ● ρ)
-  step-cooper₁ (.T , T-isunitary) δ x ρ ¬H pr = pr
-  step-cooper₁ (.F , F-isunitary) δ x ρ ¬H pr = pr
-  step-cooper₁ (.(φ₁ and φ₂) , and-isunitary {φ₁} {φ₂} y y') (δ , Hδ) x ρ ¬H (P._,_ pr₁ pr₂) = P._,_ (step-cooper₁ (φ₁ , y) (δ , alldvd-and-l {_} {φ₁ , y} {φ₂ , y'} Hδ) x ρ (neg-proj₁ (bset (φ₁ , y)) (bset (φ₂ , y')) (λ j b → x ≡ [| proj₁ b |]e (+ 0 ● ρ) ℤ+ + toℕ j) ¬H) pr₁) (step-cooper₁ (φ₂ , y') (δ , alldvd-and-r {_} {φ₁ , y} {φ₂ , y'} Hδ) x ρ (neg-proj₂ (bset (φ₁ , y)) (bset (φ₂ , y')) (λ j b → x ≡ [| proj₁ b |]e (+ 0 ● ρ) ℤ+ + toℕ j) ¬H) pr₂)
-  step-cooper₁ (.(φ₁ or φ₂) , or-isunitary {φ₁} {φ₂} y y') (δ , Hδ) x ρ ¬H pr = [ inj₁ ∘ (step-cooper₁ (φ₁ , y) (δ , (alldvd-or-l {_} {φ₁ , y} {φ₂ , y'} Hδ)) x ρ (neg-proj₁ (bset (φ₁ , y)) (bset (φ₂ , y')) (λ j b → x ≡ [| proj₁ b |]e (+ 0 ● ρ) ℤ+ + toℕ j) ¬H)) , inj₂ ∘ (step-cooper₁ (φ₂ , y') (δ , (alldvd-or-r {_} {φ₁ , y} {φ₂ , y'} Hδ)) x ρ (neg-proj₂ (bset (φ₁ , y)) (bset (φ₂ , y')) (λ j b → x ≡ [| proj₁ b |]e (+ 0 ● ρ) ℤ+ + toℕ j) ¬H)) ]′ pr
-  step-cooper₁ {n} (.(val k le val (+ 0)) , le-isunitary (val-isunit {.(ℕs n)} {k})) δ x ρ ¬H pr = pr
-  step-cooper₁ {n} (.(val k eq val (+ 0)) , eq-isunitary (val-isunit {.(ℕs n)} {k})) δ x ρ ¬H pr = pr
-  step-cooper₁ {n} (.(not (val k eq val (+ 0))) , neq-isunitary (val-isunit {.(ℕs n)} {k})) δ x ρ ¬H pr = pr
-  step-cooper₁ (.(t₁ le val (+ 0)) , le-isunitary {t₁} (varn-isunit y)) δ x ρ ¬H pr = subst (λ u → u ℤ≤ + 0) (context-simpl (t₁ , y) x (x ℤ- (+ δ-extract δ)) ρ) pr
-  step-cooper₁ (.(t₁ eq val (+ 0)) , eq-isunitary {t₁} (varn-isunit y)) δ x ρ ¬H pr = subst (λ u → u ≡ + 0) (context-simpl (t₁ , y) x (x ℤ- (+ δ-extract δ)) ρ) pr
-  step-cooper₁ (.(not (t₁ eq val (+ 0))) , neq-isunitary {t₁} (varn-isunit y)) δ x ρ ¬H pr =  subst (λ u → ¬ u ≡ + 0) (context-simpl (t₁ , y) x (x ℤ- (+ δ-extract δ)) ρ) pr
-  step-cooper₁ {n} (.(((-[1+ 0 ] :* var zero) :+ t) le val (+ 0)) , le-isunitary (var0-isunit {.n} {t} { -[1+ .0 ]} refl y')) ((δ , neq) , Hδ) x ρ ¬H pr with ℤ≤._≤?_ (- x ℤ+ + ∣ δ ∣ ℤ+ [| t |]e (x ● ρ)) (+ 0)
-  ... | yes P = subst₂ (λ u v → u ℤ+ v ℤ≤ + 0) (unfold-opp (x ℤ- + ∣ δ ∣)) (context-simpl (t , y') x (x ℤ- + ∣ δ ∣) ρ) (subst (λ u → - u ℤ+ [| t |]e (x ● ρ) ℤ≤ + 0) (sym (unfold-ℤ- x (+ ∣ δ ∣))) (subst (λ u → u ℤ+ [| t |]e (x ● ρ) ℤ≤ + 0) (sym (-distr-ℤ+ x (- (+ ∣ δ ∣)))) (subst (λ u → - x ℤ+ u ℤ+ [| t |]e (x ● ρ) ℤ≤ + 0) (sym (opp-invol (+ ∣ δ ∣))) P)))
-  ... | no ¬P with ¬ℤ≤-is-ℤ> ¬P
-  ... | Pr' with elim-bounded (- x ℤ+ ([| t |]e (x ● ρ) ℤ- (+ 1))) ∣ δ ∣ (ℤ≤.trans (subst (λ u → - x ℤ+ ([| t |]e (x ● ρ) ℤ- (+ 1)) ℤ≤ u ℤ+ [| t |]e (x ● ρ)) (unfold-opp x) (ℤ+ℤ≤-l { - x} (-ℤ≤-l ([| t |]e (x ● ρ)) 1))) pr) (ℤp-ℤ≤-compat (ℤ≤.trans Pr' (subst₂ (λ u v → u ℤ≤ v) (sym (ℤr.+-assoc (- x) (+ ∣ δ ∣) ([| t |]e (x ● ρ)))) (ℤr.+-comm (- x ℤ+ ([| t |]e (x ● ρ) ℤ- + 1) ℤ+ + ∣ δ ∣) (+ 1)) (subst (λ u → - x ℤ+ (+ ∣ δ ∣ ℤ+ [| t |]e (x ● ρ)) ℤ≤ u) (sym (ℤr.+-assoc (- x ℤ+ ([| t |]e (x ● ρ) ℤ- + 1)) (+ ∣ δ ∣) (+ 1))) (subst (λ u → - x ℤ+ (+ ∣ δ ∣ ℤ+ [| t |]e (x ● ρ)) ℤ≤ u) (sym (ℤr.+-assoc (- x) ([| t |]e (x ● ρ) ℤ- + 1) ((+ ∣ δ ∣) ℤ+ + 1))) (ℤ+ℤ≤-l { - x} (subst (λ u → + ∣ δ ∣ ℤ+ [| t |]e (x ● ρ) ℤ≤ u ℤ+ + (∣ δ ∣ ℕ+ 1)) (sym (unfold-ℤ- ([| t |]e (x ● ρ)) (+ 1))) (subst₂ (λ u v → u ℤ≤ v) (ℤr.+-comm ([| t |]e (x ● ρ)) (+ ∣ δ ∣)) (sym (ℤr.+-assoc ([| t |]e (x ● ρ)) -[1+ 0 ] ((+ ∣ δ ∣) ℤ+ + 1))) (ℤ+ℤ≤-l {[| t |]e (x ● ρ)} (subst₂ (λ u v → u ℤ≤ v) (P.proj₂ ℤr.+-identity (+ ∣ δ ∣)) (sym (ℤr.+-assoc (+ ∣ δ ∣) (+ 1) -[1+ 0 ])) ℤ≤.refl))))))))))
+   eq  : :-1 ℤ.+ (-x ℤ.+ +∣σ∣ ℤ.+ ⟦t⟧ x) ℤ.- bd ≡ ℤ.+ ℤ.∣ σ ∣
+   eq = begin
+     :-1 ℤ.+ (-x ℤ.+ +∣σ∣ ℤ.+ ⟦t⟧ x) ℤ.- (:-1 ℤ.+ (-x ℤ.+ ⟦t⟧ x)) ≡⟨ {!!} ⟩
+     ℤ.pos ℤ.∣ σ ∣
+       ∎ where open ≡-Reasoning
+
+   lb : bd ℤ.≤ :+0
+   lb = let ctxt = cong (λ a → :-1 ℤ.+ (a ℤ.+ ⟦t⟧ x)) in begin
+     :-1 ℤ.+ (-x ℤ.+ ⟦t⟧ x)        ≡⟨ ctxt (sym (ZProp.-1*n≡-n x)) ⟩
+     :-1 ℤ.+ (:-1 ℤ.* x ℤ.+ ⟦t⟧ x) ≤⟨ ZProp.+-monoʳ-≤ :-1 pr ⟩
+     :-1                           ≤⟨ ℤ.-≤+ ⟩
+     :+0                           ∎ where open ZProp.≤-Reasoning
+
+   ub : :+0 ℤ.≤ :-1 ℤ.+ (-x ℤ.+ +∣σ∣ ℤ.+ ⟦t⟧ x)
+   ub = ZProp.+-monoʳ-≤ :-1 lt
+
+   int = bounded⇒interval lb ub
+
+   k = proj₁ int
+   j = Fin.cast (cong ℕ.suc (cong ℤ.∣_∣ eq)) k
+
+{-
+   ⋯-x≡0 : ⟦t⟧ x ℤ.+ (ℤ.+ Fin.toℕ j) ℤ.- x ≡ ℤ.+ 0
+   ⋯-x≡0 = begin
+     ⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ j ℤ.- x
+       ≡⟨ ZProp.+-comm (⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ j) (ℤ.- x) ⟩
+     ℤ.- x ℤ.+ (⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ j)
+       ≡⟨ sym (ZProp.+-assoc (ℤ.- x) (⟦t⟧ x) (ℤ.+ Fin.toℕ j)) ⟩
+     ℤ.- x ℤ.+ ⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ j
+       ≡⟨ cong₂ (λ a b → a ℤ.+ ⟦t⟧ x ℤ.+ ℤ.+ b)
+                (sym (ZProp.-1*n≡-n x))
+                (FProp.toℕ-cast (cong ℕ.suc $ cong ℤ.∣_∣ eq) k) ⟩
+     :-1 ℤ.* x ℤ.+ ⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ k
+       ≡⟨ proj₂ int ⟩
+     ℤ.+ 0 ∎ where open ≡-Reasoning
+
+   x≡⋯ : x ≡ ⟦ proj₁ e-1 ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j
+   x≡⋯ = begin
+     x ≡⟨ sym (ZProp.m-n≡0⇒m≡n (⟦t⟧ x ℤ.+ (ℤ.+ Fin.toℕ j)) x ⋯-x≡0) ⟩
+     ⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ j ≡⟨ {!!} ⟩
+     {!!} ≡⟨ {!!} ⟩
+     ⟦t⟧ :+0 ℤ.+ :-1 ℤ.+ ℤ.+ Fin.toℕ j
+       ≡⟨ cong (ℤ._+ ℤ.+ Fin.toℕ j) (⟦ e ⟧+E⟦ val :-1 ⟧ (:+0 ∷ ρ)) ⟩
+     ⟦ proj₁ e-1 ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j ∎ where open ≡-Reasoning
+
+
+-}
+{- 
   ... | P._,_ j Hj with  lin-plus (t , y') (val -[1+ 0 ] , val-islinn-i) | lin-plus-sem (t , y') (val -[1+ 0 ] , val-islinn-i) (+ 0 ● ρ)
-  ... | e | Heq = ⊥-elim (¬H (P._,_ j (P._,_ e  (P._,_ here (subst (λ u → x ≡ u ℤ+ + toℕ j) Heq (tmp (subst (λ u → - x ℤ+ (u ℤ+ + toℕ j) ≡ + 0) (unfold-ℤ- ([| t |]e (+ 0 ●  ρ)) (+ 1)) (subst₂ (λ u v → - x ℤ+ (u ℤ- + 1 ℤ+ + toℕ j) ≡ v) (context-simpl (t , y') x (+ 0) ρ) Hj (sym (ℤr.+-assoc (- x) ([| t |]e (x ● ρ) ℤ- + 1) (+ toℕ j)))))))))))
-  step-cooper₁ {n} (.(((-[1+ 0 ] :* var zero) :+ t) eq val (+ 0)) , eq-isunitary (var0-isunit {.n} {t} { -[1+ .0 ]} refl y')) ((δ , neq) , Hdiv) x ρ H Pr with ∣ δ ∣ | ◃-left-inverse δ
-  step-cooper₁ {n} (.(((-[1+ 0 ] :* var zero) :+ t) eq val (+ 0)) , eq-isunitary (var0-isunit {.n} {t} { -[1+ .0 ]} refl y')) ((.(+ 0) , neq) , Hdiv) x ρ H Pr | 0 | refl = ⊥-elim (neq refl)
-  step-cooper₁ {n} (.(((-[1+ 0 ] :* var zero) :+ t) eq val (+ 0)) , eq-isunitary (var0-isunit {.n} {t} { -[1+ .0 ]} refl y')) ((δ , neq) , Hdiv) x ρ H Pr | ℕs k | Hk with lin-plus (t , y') (val -[1+ 0 ] , val-islinn-i) | lin-plus-sem (t , y') (val -[1+ 0 ] , val-islinn-i) (+ 0 ● ρ)
-  ... | e | Heq = ⊥-elim (H (P._,_ (Fs zero) (P._,_ e (P._,_ here (subst (λ u → x ≡ u ℤ+ + 1) Heq (subst (λ u → x ≡ u) (sym (ℤr.+-assoc ([| t |]e (+ 0 ● ρ)) -[1+ 0 ] (+ 1))) (subst (λ u → x ≡ u) (sym (P.proj₂ ℤr.+-identity ([| t |]e (+ 0 ● ρ)))) (tmp (subst₂ (λ u v → u ℤ+ v ≡ + 0) (sym (unfold-opp x)) (context-simpl (t , y') x (+ 0) ρ) Pr)) )))))))
-  step-cooper₁ {n} (.(not (((-[1+ 0 ] :* var zero) :+ t) eq val (+ 0))) , neq-isunitary (var0-isunit {.n} {t} { -[1+ .0 ]} refl y')) δ x ρ ¬H pr = λ hf → ¬H (P._,_ (fromℕ (δ-extract δ)) (P._,_ (t , y') (P._,_ here (tmp (subst (λ u → - x ℤ+ ([| t |]e (+ 0 ● ρ) ℤ+ + u) ≡ + 0) (sym (toℕ-fromℕ-rev (δ-extract δ))) (subst (λ u → - x ℤ+ u ≡ + 0) (ℤr.+-comm (+ δ-extract δ) ([| t |]e (+ 0 ● ρ))) (subst (λ u → u ≡ + 0) (ℤr.+-assoc (- x) (+ δ-extract δ) ([| t |]e (+ 0 ● ρ))) (subst (λ u → - x ℤ+ u ℤ+ [| t |]e (+ 0 ● ρ) ≡ + 0) (opp-invol (+ δ-extract δ)) (subst (λ u → u ℤ+ [| t |]e (+ 0 ● ρ) ≡ + 0) (-distr-ℤ+ x (- (+ δ-extract δ))) (subst (λ u → - u ℤ+ [| t |]e (+ 0 ● ρ) ≡ + 0) (unfold-ℤ- x (+ δ-extract δ)) (subst₂ (λ u v → u ℤ+ v ≡ + 0) (sym (unfold-opp (x ℤ- + δ-extract δ))) (context-simpl (t , y') (x ℤ- + δ-extract δ) (+ 0) ρ) hf)))))))))))
-  step-cooper₁ {n} (.((((+ 1) :* var zero) :+ t) le val (+ 0)) , le-isunitary (var0-isunit {.n} {t} {+ .1} refl y')) δ x ρ ¬H pr = ℤ≤.trans (subst₂ (λ u v → u ℤ+ v ℤ≤ (+ 1) ℤ* x ℤ+ [| t |]e (x ● ρ)) (sym (P.proj₁ ℤr.*-identity (x ℤ- (+ δ-extract δ)))) (context-simpl (t , y') x (x ℤ- (+ δ-extract δ)) ρ) (ℤ+ℤ≤-r {[| t |]e (x ● ρ)} (subst (λ u → x ℤ- + δ-extract δ ℤ≤ u) (sym (P.proj₁ ℤr.*-identity x)) (-ℤ≤-l x (δ-extract δ))))) pr
-  step-cooper₁ {n} (.((((+ 1) :* var zero) :+ t) eq val (+ 0)) , eq-isunitary (var0-isunit {.n} {t} {+ .1} refl y')) ((δ , neq) , Hδ) x ρ ¬H pr with ∣ δ ∣ | ◃-left-inverse δ
-  step-cooper₁ {n} (.((((+ 1) :* var zero) :+ t) eq val (+ 0)) , eq-isunitary (var0-isunit {.n} {t} {+ .1} refl y')) ((.(+ 0) , neq) , Hδ) x ρ ¬H pr | 0 | refl = ⊥-elim (neq refl)
-  step-cooper₁ {n} (.((((+ 1) :* var zero) :+ t) eq val (+ 0)) , eq-isunitary (var0-isunit {.n} {t} {+ .1} refl y')) ((δ , neq) , Hδ) x ρ ¬H pr | ℕs k | Hk with lin-plus (lin-opp (t , y')) (val -[1+ 0 ] , val-islinn-i) | lin-opp-sem (t , y') (+ 0 ● ρ) | lin-plus-sem (lin-opp (t , y')) (val -[1+ 0 ] , val-islinn-i) (+ 0 ● ρ)
-  ... | e | Heq₁ | Heq₂ = ⊥-elim (¬H (P._,_ (Fs zero) (P._,_ e (P._,_ here (subst (λ u → x ≡ u ℤ+ + 1) Heq₂ (subst (λ u → x ≡ u ℤ+ -[1+ 0 ] ℤ+ + 1) Heq₁ (subst (λ u → x ≡ u) (sym (ℤr.+-assoc (- [| t |]e (+ 0 ● ρ)) -[1+ 0 ] (+ 1))) (subst (λ u → x ≡ u) (sym (P.proj₂ ℤr.+-identity (- [| t |]e (+ 0 ● ρ)))) (sym (tmp (subst (λ u → u ℤ+ x ≡ + 0) (sym (opp-invol ([| t |]e (+ 0 ● ρ)))) (subst (λ u → u ≡ + 0) (ℤr.+-comm x ([| t |]e (+ 0 ● ρ))) (subst₂ (λ u v → u ℤ+ v ≡ + 0) (P.proj₁ ℤr.*-identity x) (context-simpl (t , y') x (+ 0) ρ) pr)))))))))))))
-  step-cooper₁ {n} (.(not ((((+ 1) :* var zero) :+ t) eq val (+ 0))) , neq-isunitary (var0-isunit {.n} {t} {+ .1} refl y')) δ x ρ ¬H pr with lin-opp (t , y') | lin-opp-sem (t , y') (+ 0 ● ρ)
-  ... | e | Heq = λ hf → ¬H (P._,_ (fromℕ (δ-extract δ)) (P._,_ e (P._,_ here (subst₂ (λ u v → x ≡ u ℤ+ + v) Heq (sym (toℕ-fromℕ-rev (δ-extract δ))) (subst₂ (λ u v → x ≡ - u ℤ+ v) (context-simpl (t , y') x (+ 0) ρ) (opp-invol (+ δ-extract δ)) (subst (λ u → x ≡ u) (-distr-ℤ+ ([| t |]e (x ● ρ)) (- (+ δ-extract δ))) (sym (tmp (subst (λ u → u ℤ+ x ≡ + 0) (sym (opp-invol ([| t |]e (x ● ρ) ℤ+ - (+ δ-extract δ)))) (subst (λ u → u ≡ + 0) (sym (ℤr.+-assoc ([| t |]e (x ● ρ)) (- (+ δ-extract δ)) x)) (subst (λ u → u ≡ + 0) (ℤr.+-comm (- (+ δ-extract δ) ℤ+ x) ([| t |]e (x ● ρ))) (subst₂ (λ u v → - (+ δ-extract δ) ℤ+ x ℤ+ u ≡ v) (context-simpl (t , y') (x ℤ- + δ-extract δ) x ρ) hf (ℤ+-right {[| t |]e ((x ℤ- + δ-extract δ) ● ρ)} (subst₂ (λ u v → u ≡ v) (ℤr.+-comm x (- (+ δ-extract δ))) (sym (P.proj₁ ℤr.*-identity (x ℤ- + δ-extract δ))) (sym (unfold-ℤ- x (+ δ-extract δ)))))))))))))))))
-  step-cooper₁ (.(k dvd t₁) , dvd-isunitary {k} {t₁} y y') ((δ , neq) , dvd-alldvd y0 y1) x ρ ¬H pr with dvd-mod (t₁ , y') (abs-Notnull (δ , neq)) (k , y) y1 -[1+ 0 ] x ρ
-  ... | P._,_ P Q =  subst (λ u → [| k dvd t₁ |] (u ● ρ)) (sym (unfold-ℤ- x (+ ∣ δ ∣))) (subst  (λ u → [| k dvd t₁ |] ((x ℤ+ u) ● ρ)) (sym (unfold-opp (+ ∣ δ ∣))) (P pr))
-  step-cooper₁ (.(not (k dvd t₁)) , ndvd-isunitary {k} {t₁} y y') ((δ , neq) , ndvd-alldvd y0 y1) x ρ ¬H pr with dvd-mod (t₁ , y') (abs-Notnull (δ , neq)) (k , y) y1 -[1+ 0 ] x ρ
-  ... | P._,_ P Q = λ hf → pr (Q (subst (λ u → [| k dvd t₁ |] (x ℤ+ u ● ρ)) (unfold-opp (+ ∣ δ ∣)) (subst (λ u → [| k dvd t₁ |] (u ● ρ)) (unfold-ℤ- x (+ ∣ δ ∣)) hf)))
+  ... | e | Heq = ⊥-elim
+
+  (¬H (P._,_ j
+      (P._,_ e
+     (P._,_ here
+    (subst (λ u → x ≡ u ℤ+ + toℕ j) Heq
+    (tmp (subst (λ u → - x ℤ+ (u ℤ+ + toℕ j) ≡ + 0)
+    (unfold-ℤ- ([| t |]e (+ 0 ●  ρ)) (+ 1))
+     (subst₂ (λ u v → - x ℤ+ (u ℤ- + 1 ℤ+ + toℕ j) ≡ v)
+     (context-simpl (t , y') x (+ 0) ρ) Hj
+     (sym (ℤr.+-assoc (- x) ([| t |]e (x ● ρ) ℤ- + 1) (+ toℕ j)))))))))))
+
+-}
+-- :≡0
+step-cooper₁ (val k :≡0) divφ x ρ ¬H = id
+step-cooper₁ {σ = σ , _} (varn p + e        :≡0) divφ x ρ ¬H pr = begin
+  let t = toExp (Lin-E (ℕ.suc p)) e; x-∣σ∣ = x ℤ.- ℤ.+ ℤ.∣ σ ∣ in
+  ⟦ t ⟧e (x-∣σ∣ ∷ ρ) ≡⟨ lin-ext₁ e x-∣σ∣ x ρ ⟩
+  ⟦ t ⟧e (x ∷ ρ)     ≡⟨ pr ⟩
+  ℤ.+ 0              ∎ where open ≡-Reasoning
+step-cooper₁ {σ = σ , σ≠0} (:+1 [ ∣+1∣ ]*var0+ e :≡0) divφ x ρ ¬H pr
+  with ℤ.∣ σ ∣ | [∣ σ≠0 ∣≠0]
+... | ℕ.suc k | +[1+ k ] = ⊥-elim $′ ¬H ((Fin.suc Fin.zero , _) , here refl , eq) where
+
+  t    = toExp (Lin-E 1) e
+  -e   = -E e
+  -e-1 = proj₂ -e +E val :-1
+
+  ⟦-e⟧ = λ x → ⟦ proj₁ -e ⟧e (x ∷ ρ)
+
+  eq : x ≡ ⟦ proj₁ -e-1 ⟧e (ℤ.+ 0 ∷ ρ) ℤ.+ ℤ.+ 1
+  eq = begin
+    x                        ≡⟨ sym (ZProp.*-identityˡ x) ⟩
+    ℤ.+ 1 ℤ.* x              ≡⟨ APR.+-left-inverse-unique _ _ pr ⟩
+    ℤ.- ⟦ t ⟧e (x ∷ ρ)       ≡⟨ ⟦-E e ⟧ (x ∷ ρ) ⟩
+    ⟦-e⟧ x                   ≡⟨ lin-ext₁ (proj₂ -e) x :+0 ρ ⟩
+    ⟦-e⟧ :+0                 ≡⟨ sym (ZProp.+-identityʳ (⟦-e⟧ :+0)) ⟩
+    ⟦-e⟧ :+0 ℤ.+ ℤ.+ 0       ≡⟨ sym (ZProp.+-assoc (⟦-e⟧ :+0) :-1 :+1) ⟩
+    ⟦-e⟧ :+0 ℤ.+ :-1 ℤ.+ :+1 ≡⟨ cong (ℤ._+ :+1) (⟦ proj₂ -e ⟧+E⟦ val :-1 ⟧ (:+0 ∷ ρ)) ⟩
+    ⟦ proj₁ -e-1 ⟧e (:+0 ∷ ρ) ℤ.+ :+1
+      ∎ where open ≡-Reasoning
+
+step-cooper₁ {σ = σ , σ≠0} (:-1 [ ∣-1∣ ]*var0+ e :≡0) divφ x ρ ¬H pr
+  with ℤ.∣ σ ∣ | [∣ σ≠0 ∣≠0]
+... | ℕ.suc k | +[1+ k ] = ⊥-elim $′ ¬H ((Fin.suc Fin.zero , _) , here refl , eq) where
+
+  t = toExp (Lin-E 1) e
+  e-1 = e +E val :-1
+  ⟦t⟧ = λ x → ⟦ t ⟧e (x ∷ ρ)
+
+  eq : x ≡ ⟦ proj₁ (e +E val :-1) ⟧e (:+0 ∷ ρ) ℤ.+ :+1
+  eq = begin
+    x                                ≡⟨ sym (ZProp.neg-involutive x) ⟩
+    ℤ.- ℤ.- x                        ≡⟨ cong ℤ.-_ (sym (ZProp.-1*n≡-n x)) ⟩
+    ℤ.- (:-1 ℤ.* x)                  ≡⟨ cong ℤ.-_ (APR.+-left-inverse-unique _ _ pr) ⟩
+    ℤ.- ℤ.- ⟦t⟧ x                    ≡⟨ ZProp.neg-involutive _ ⟩
+    ⟦t⟧ x                            ≡⟨ lin-ext₁ e x :+0 ρ ⟩
+    ⟦t⟧ :+0                          ≡⟨ sym (ZProp.+-identityʳ (⟦t⟧ :+0)) ⟩
+    ⟦t⟧ :+0 ℤ.+ ℤ.+ 0                ≡⟨ sym (ZProp.+-assoc (⟦t⟧ :+0) :-1 :+1) ⟩
+    ⟦t⟧ :+0 ℤ.+ :-1 ℤ.+ :+1          ≡⟨ cong (ℤ._+ :+1) (⟦ e ⟧+E⟦ val :-1 ⟧ (:+0 ∷ ρ)) ⟩
+    ⟦ proj₁ e-1 ⟧e (:+0 ∷ ρ) ℤ.+ :+1 ∎ where open ≡-Reasoning
+
+-- :≢0
+step-cooper₁ (val k :≢0) divφ x ρ ¬H = id
+step-cooper₁ {σ = σ , _} (varn p + e :≢0) divφ x ρ ¬H =
+  contraposition $ λ pr → begin
+  let t = toExp (Lin-E (ℕ.suc p)) e; x-∣σ∣ = x ℤ.- ℤ.+ ℤ.∣ σ ∣ in
+  ⟦ t ⟧e (x ∷ ρ)     ≡⟨ lin-ext₁ e x x-∣σ∣ ρ ⟩
+  ⟦ t ⟧e (x-∣σ∣ ∷ ρ) ≡⟨ pr ⟩
+  ℤ.+ 0              ∎ where open ≡-Reasoning
+step-cooper₁ {σ = σ , σ≠0} (:+1 [ ∣+1∣ ]*var0+ e :≢0) divφ x ρ ¬H pr hf =
+  ¬H ((k , -e) , here refl , eq) where
+
+  k    = Fin.fromℕ ℤ.∣ σ ∣
+  k'   = ℤ.+ ℤ.∣ σ ∣
+  x-k' = x ℤ.- k'
+  -e   = -E e
+  t    = toExp (Lin-E 1) e
+  ctxt = cong (ℤ._+ k')
+  ⟦t⟧  = λ x → ⟦ t ⟧e (x ∷ ρ)
+  ⟦-e⟧ = λ x → ⟦ proj₁ -e ⟧e (x ∷ ρ)
+
+  eq : x ≡ ⟦ proj₁ -e ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ (Fin.toℕ k)
+  eq = begin
+    x                     ≡⟨ sym (ZProp.+-identityʳ x) ⟩
+    x ℤ.+ :+0             ≡⟨ cong (ℤ._+_ x) (sym (ZProp.+-inverseˡ k')) ⟩
+    x ℤ.+ (ℤ.- k' ℤ.+ k') ≡⟨ sym (ZProp.+-assoc x (ℤ.- k') k') ⟩
+    x-k' ℤ.+ k'           ≡⟨ ctxt (sym (ZProp.*-identityˡ x-k')) ⟩
+    :+1 ℤ.* x-k' ℤ.+ k'   ≡⟨ ctxt (APR.+-left-inverse-unique (:+1 ℤ.* x-k') _ hf) ⟩
+    ℤ.- ⟦t⟧ x-k' ℤ.+ k'   ≡⟨ ctxt (⟦-E e ⟧ (x-k' ∷ ρ)) ⟩
+    ⟦-e⟧ x-k' ℤ.+ k'      ≡⟨ ctxt (lin-ext₁ (proj₂ -e) x-k' :+0 ρ) ⟩
+    ⟦-e⟧ :+0 ℤ.+ k'       ≡⟨ cong (ℤ._+_ (⟦-e⟧ :+0) ∘ ℤ.+_) (sym (FProp.toℕ-fromℕ _)) ⟩
+    ⟦-e⟧ :+0 ℤ.+ ℤ.+ (Fin.toℕ k) ∎ where open ≡-Reasoning
+
+step-cooper₁ {σ = σ , σ≠0} (:-1 [ ∣-1∣ ]*var0+ e :≢0) divφ x ρ ¬H pr hf =
+  ¬H ((k , (-, e)) , here refl , eq) where
+
+  k    = Fin.fromℕ ℤ.∣ σ ∣
+  k'   = ℤ.+ ℤ.∣ σ ∣
+  x-k' = x ℤ.- k'
+  t    = toExp (Lin-E 1) e
+  ⟦t⟧  = λ x → ⟦ t ⟧e (x ∷ ρ)
+  ctxt = cong (λ z → ℤ.- z ℤ.+ k')
+
+  eq : x ≡ ⟦t⟧ :+0 ℤ.+ ℤ.+ (Fin.toℕ k)
+  eq = begin
+    x                           ≡⟨ sym (ZProp.+-identityʳ x) ⟩
+    x ℤ.+ :+0                   ≡⟨ cong (ℤ._+_ x) (sym (ZProp.+-inverseˡ k')) ⟩
+    x ℤ.+ (ℤ.- k' ℤ.+ k')       ≡⟨ sym (ZProp.+-assoc x (ℤ.- k') k') ⟩
+    x-k' ℤ.+ k'                 ≡⟨ cong (ℤ._+ k') (sym (ZProp.neg-involutive x-k')) ⟩
+    ℤ.- (ℤ.- x-k') ℤ.+ k'       ≡⟨ ctxt (sym (ZProp.-1*n≡-n x-k')) ⟩
+    ℤ.- (:-1 ℤ.* x-k') ℤ.+ k'   ≡⟨ ctxt (APR.+-left-inverse-unique (:-1 ℤ.* x-k') _ hf) ⟩
+    ℤ.- (ℤ.- ⟦t⟧ x-k') ℤ.+ k'   ≡⟨ cong (ℤ._+ k') (ZProp.neg-involutive (⟦t⟧ x-k')) ⟩
+    ⟦t⟧ x-k' ℤ.+ k'             ≡⟨ cong₂ ℤ._+_ (lin-ext₁ e x-k' :+0 ρ)
+                                               (cong ℤ.+_ (sym (FProp.toℕ-fromℕ _))) ⟩
+    ⟦t⟧ :+0 ℤ.+ ℤ.+ (Fin.toℕ k) ∎ where open ≡-Reasoning
+
+step-cooper₁ {σ = σ≠0} (k≠0 :| e) (k∣′σ [ _ ]:| t) x ρ ¬H ⟦f⟧ = begin
+  k                                      ∣′⟨ kdivs ⟩
+  ⟦ t ⟧e (:-1 ℤ.* ℤ.+ ℤ.∣ σ ∣ ℤ.+ x ∷ ρ) ≡⟨ ctxt (ZProp.+-comm (:-1 ℤ.* ℤ.pos ℤ.∣ σ ∣) x) ⟩
+  ⟦ t ⟧e (x ℤ.+ :-1 ℤ.* ℤ.+ ℤ.∣ σ ∣ ∷ ρ) ≡⟨ ctxt (cong (ℤ._+_ x) (ZProp.-1*n≡-n _)) ⟩
+  ⟦ t ⟧e (x-∣σ∣ ∷ ρ) ∎ where
+
+  open ZdivProp.∣′-Reasoning
+  σ      = proj₁ σ≠0
+  x-∣σ∣  = x ℤ.- ℤ.+ ℤ.∣ σ ∣
+  k      = toℤ k≠0
+  k∣′∣σ∣ = ZdivProp.∣′-trans k∣′σ ZdivProp.m∣′∣m∣
+  kdivs  = proj₁ (⟦ e mod-E ∣ σ≠0 ∣≠0 |: _ [ k∣′∣σ∣ ]⟧ :-1 x ρ) ⟦f⟧
+  ctxt   = cong (λ x → ⟦ t ⟧e (x ∷ ρ))
+
+step-cooper₁ {σ = σ≠0} (k≠0 :|̸ e) (k∣′σ [ _ ]:|̸ t) x ρ ¬H ¬k∣′ k∣′ = ¬k∣′ $ begin
+  k ∣′⟨ kdivs ⟩
+  ⟦ t ⟧e (1*+∣σ∣ ℤ.+ x-∣σ∣ ∷ ρ)        ≡⟨ ctxt (ZProp.+-comm 1*+∣σ∣ x-∣σ∣ ) ⟩
+  ⟦ t ⟧e (x-∣σ∣ ℤ.+ 1*+∣σ∣ ∷ ρ)        ≡⟨ ctxt (ZProp.+-assoc x -∣σ∣ 1*+∣σ∣) ⟩
+  ⟦ t ⟧e (x ℤ.+ (-∣σ∣ ℤ.+ 1*+∣σ∣) ∷ ρ) ≡⟨ ctxt (ctxt' (ZProp.*-identityˡ +∣σ∣)) ⟩
+  ⟦ t ⟧e (x ℤ.+ (-∣σ∣ ℤ.+ +∣σ∣) ∷ ρ)   ≡⟨ ctxt (cong (ℤ._+_ x) (ZProp.+-inverseˡ +∣σ∣)) ⟩
+  ⟦ t ⟧e (x ℤ.+ :+0 ∷ ρ)               ≡⟨ ctxt (ZProp.+-identityʳ x) ⟩
+  ⟦ t ⟧e (x ∷ ρ) ∎ where
+
+  open ZdivProp.∣′-Reasoning
+  σ      = proj₁ σ≠0
+  +∣σ∣   = ℤ.+ ℤ.∣ σ ∣
+  -∣σ∣   = ℤ.- +∣σ∣
+  1*+∣σ∣ = :+1 ℤ.* +∣σ∣
+  x-∣σ∣  = x ℤ.- +∣σ∣
+  k      = toℤ k≠0
+  k∣′∣σ∣ = ZdivProp.∣′-trans k∣′σ ZdivProp.m∣′∣m∣
+  kdivs = proj₁ (⟦ e mod-E ∣ σ≠0 ∣≠0 |: _ [ k∣′∣σ∣ ]⟧ :+1 x-∣σ∣ ρ) k∣′
+  ctxt   = cong (λ x → ⟦ t ⟧e (x ∷ ρ))
+  ctxt'  = cong (λ t → x ℤ.+ (-∣σ∣ ℤ.+ t))
+
+step-cooper₁ (φ :∧ ψ) (divφ :∧ divψ) x ρ ¬H = Prod.map
+  (step-cooper₁ φ divφ x ρ $ flip contraposition ¬H
+                           $ Prod.map₂ $ Prod.map₁ (∈-++⁺ˡ _))
+  (step-cooper₁ ψ divψ x ρ $ flip contraposition ¬H
+                           $ Prod.map₂ $ Prod.map₁ (∈-++⁺ʳ _ (bset φ)))
+step-cooper₁ (φ :∨ ψ) (divφ :∨ divψ) x ρ ¬H = Sum.map
+  (step-cooper₁ φ divφ x ρ $ flip contraposition ¬H
+                           $ Prod.map₂ $ Prod.map₁ (∈-++⁺ˡ _))
+  (step-cooper₁ ψ divψ x ρ $ flip contraposition ¬H
+                           $ Prod.map₂ $ Prod.map₁ (∈-++⁺ʳ _ (bset φ)))
 
 
-  x-decomp-dec₁ : ∀ {m n} (L : List (Lin′ n 1)) (j : Fin m) → ∀ ρ x → Dec (P.∃ (λ b → P.Σ (b ∈ L) (λ _ → x ≡ ([| proj₁ b |]e ρ ℤ+ (+ toℕ j)))))
+{-
+
+  x-decomp-dec₁ : ∀ {m n} (L : List (Lin′ n 1)) (j : Fin m) →
+    ∀ ρ x → Dec (P.∃ (λ b → P.Σ (b ∈ L) (λ _ → x ≡ ([| proj₁ b |]e ρ ℤ+ (+ toℕ j)))))
   x-decomp-dec₁ [] j ρ x = no (λ h → b∈[]-elim (P.proj₁ (P.proj₂ h)))
   x-decomp-dec₁ (x ∷ xs) j ρ x' with x' ℤ≟ ([| proj₁ x |]e ρ ℤ+ + toℕ j) | x-decomp-dec₁ xs j ρ x'
   ... | yes P₁ | _ = yes (P._,_ x (P._,_ here P₁))
