@@ -392,4 +392,3 @@ cooper₁-simpl {σ = σ , σ≠0} φ divφ ρ ¬H x pr with ℤcompare x (bound
     bd ∎ where open ZProp.≤-Reasoning
 
   pr′ = cooper₁s ℤ.∣ q ∣ φ divφ ρ ¬H x pr
-
