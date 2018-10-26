@@ -2,14 +2,16 @@ module Properties-prop where
 
 open import Representation
 open import Properties
+open import Semantics
 
 open import Data.Nat as ℕ
 open import Data.Nat.Properties
 import Data.Nat.Divisibility as Ndiv
 
 open import Data.Integer as ℤ
+import Data.Integer.Properties as ZProp
 open import Data.Integer.Divisibility as Zdiv
-open import Data.Integer.Divisibility.Properties
+open import Data.Integer.Divisibility.Properties as ZdivProp
 
 open import Data.Fin as F
 open import Data.Empty
@@ -19,6 +21,11 @@ open import Function
 
 open import Relation.Binary.PropositionalEquality
 open import Relation.Binary
+
+open import Relation.Nullary
+open import Relation.Nullary.Negation
+open import Relation.Nullary.Product
+open import Relation.Nullary.Sum
 
 abstract
 
@@ -134,3 +141,17 @@ abstract
   ∣_∣-All∣′ : ∀ {n σ φ} → All∣′ {n} σ φ → All∣′ ∣ σ ∣≠0 φ
   ∣ p ∣-All∣′ = m∣′∣m∣ ∣′-All∣′ p
 
+-----
+-- Decidability
+-----
+
+NNF? : ∀ {n f} (φ : NNF {n} f) ρ → Dec (⟦ f ⟧ ρ)
+NNF? T        ρ = yes _
+NNF? F        ρ = no λ ()
+NNF? (t :≤ u) ρ = _ ZProp.≤? _
+NNF? (t :≡ u) ρ = _ ZProp.≟ _
+NNF? (t :≢ u) ρ = ¬? (_ ZProp.≟ _)
+NNF? (k :| t) ρ = _ ZdivProp.∣′? _
+NNF? (k :|̸ t) ρ = ¬? (_ ZdivProp.∣′? _)
+NNF? (φ :∧ ψ) ρ = NNF? φ ρ ×-dec NNF? ψ ρ
+NNF? (φ :∨ ψ) ρ = NNF? φ ρ ⊎-dec NNF? ψ ρ
