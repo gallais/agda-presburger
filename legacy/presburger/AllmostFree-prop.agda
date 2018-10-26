@@ -97,28 +97,24 @@ lcm-:∣′ (φ :∨ ψ) =
               ↔ ∃ (λ (k : Fin ℤ.∣ proj₁ σ ∣) → ⟦ f ⟧ (ℤ.+ Fin.toℕ k ∷ ρ))
 ⟦finite φ when (σ , σ≠0) :| divφ ⟧ ρ = flip _,_ (Prod.map (ℤ.+_ ∘′ Fin.toℕ) id) $ uncurry $
   λ x ⟦f⟧k∷ρ →
-    let ∣σ∣≢0 = to≢0 [∣ σ≠0 ∣≠0] ∘′ cong ℤ.pos
-        d     = ℕ.suc (ℕ.pred ℤ.∣ σ ∣)
-        d≡d'  = sym $ NProp.m≢0⇒m≡s[pred[m]] ∣σ∣≢0
-        divφ′ : All∣′ (ℤ.+ d , +[1+ _ ]) _
-        divφ′ = subst (σ Zdiv.∣′_) (sym $ cong ℤ.pos d≡d') m∣′∣m∣ ∣′-All∣′ divφ
-        q     = x divℕ d
-        r<d   = ZDM.n%ℕd<d x (ℕ.pred ℤ.∣ σ ∣)
+    let d     = ℤ.∣ σ ∣
+        d≢0   = fromWitnessFalse $ to≢0 [∣ σ≠0 ∣≠0] ∘′ cong ℤ.pos
+        divφ′ : All∣′ ∣ σ , σ≠0 ∣≠0 _
+        divφ′ = m∣′∣m∣ ∣′-All∣′ divφ
+        q     = (x divℕ d) {d≢0}
+        r<d   = ZDM.n%ℕd<d x d {d≢0}
         r     = Fin.fromℕ≤ r<d
-        r-eq  : ∀ {d'} → (eq : d ≡ d') → Fin.toℕ (subst Fin eq r) ≡ Fin.toℕ r
-        r-eq  = λ where refl → refl
         eq    : x ≡ q ℤ.* ℤ.+ d ℤ.+ ℤ.+ (Fin.toℕ r)
         eq    = let open ≡-Reasoning in begin
                 x
-                  ≡⟨ ZDM.a≡a%ℕn+[a/ℕn]*n x (ℕ.pred d) ⟩
+                  ≡⟨ ZDM.a≡a%ℕn+[a/ℕn]*n x d ⟩
                 ℤ.+ (x modℕ d) ℤ.+ x divℕ d ℤ.* ℤ.+ d
                   ≡⟨ cong (λ r → ℤ.+ r ℤ.+ q ℤ.* ℤ.+ d) (sym (FProp.toℕ-fromℕ≤ r<d)) ⟩
                 ℤ.+ Fin.toℕ r ℤ.+ x divℕ d ℤ.* ℤ.+ d
                   ≡⟨ ZProp.+-comm (ℤ.+ Fin.toℕ r) (q ℤ.* ℤ.+ d) ⟩
                 q ℤ.* ℤ.+ d ℤ.+ ℤ.+ Fin.toℕ r
                 ∎
-    in _,_ (subst Fin d≡d' r)
-     $′ subst (λ x → ⟦ _ ⟧ (ℤ.+ x ∷ ρ)) (sym (r-eq d≡d'))
+    in _,_ r
      $′ proj₂ (⟦ φ mod divφ′ ⟧ q (ℤ.+ Fin.toℕ r) ρ)
      $′ subst (λ x → ⟦ _ ⟧ (x ∷ ρ)) eq
      ⟦f⟧k∷ρ
