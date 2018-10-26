@@ -84,7 +84,7 @@ step-cooper₁ {σ = σ , σ≠0} (:-1 [ ∣-1∣ ]*var0+ e :≤0) divφ x ρ ¬
   t     = toExp (Lin-E 1) e
   ⟦t⟧   = λ x → ⟦ t ⟧e (x ∷ ρ)
 
-... | no ¬le = ⊥-elim $ ¬H ((j , e +E val :-1) , here refl , {!!}) where
+... | no ¬le = ⊥-elim $ ¬H ((j , e +E val :-1) , here refl , ⋯-x≡0) where
 
    lt   = ZProp.≰→> ¬le
    t    = toExp (Lin-E 1) e
@@ -96,9 +96,26 @@ step-cooper₁ {σ = σ , σ≠0} (:-1 [ ∣-1∣ ]*var0+ e :≤0) divφ x ρ ¬
    bd = :-1 ℤ.+ (-x ℤ.+ ⟦t⟧ x)
 
    eq  : :-1 ℤ.+ (-x ℤ.+ +∣σ∣ ℤ.+ ⟦t⟧ x) ℤ.- bd ≡ ℤ.+ ℤ.∣ σ ∣
-   eq = begin
-     :-1 ℤ.+ (-x ℤ.+ +∣σ∣ ℤ.+ ⟦t⟧ x) ℤ.- (:-1 ℤ.+ (-x ℤ.+ ⟦t⟧ x)) ≡⟨ {!!} ⟩
-     ℤ.pos ℤ.∣ σ ∣
+   eq = begin let exp = :-1 ℤ.+ (-x ℤ.+ ⟦t⟧ x) in
+     :-1 ℤ.+ (-x ℤ.+ +∣σ∣ ℤ.+ ⟦t⟧ x) ℤ.- exp
+       ≡⟨ cong (ℤ._- exp) (sym (ZProp.+-assoc :-1 (-x ℤ.+ +∣σ∣) (⟦t⟧ x))) ⟩
+     :-1 ℤ.+ (-x ℤ.+ +∣σ∣) ℤ.+ ⟦t⟧ x ℤ.- exp
+       ≡⟨ cong (λ e → :-1 ℤ.+ e ℤ.+ ⟦t⟧ x ℤ.- exp) (ZProp.+-comm -x +∣σ∣) ⟩
+     :-1 ℤ.+ (+∣σ∣ ℤ.+ -x) ℤ.+ ⟦t⟧ x ℤ.- exp
+       ≡⟨ cong (λ e → e ℤ.+ ⟦t⟧ x ℤ.- exp) (sym (ZProp.+-assoc :-1 +∣σ∣ -x)) ⟩
+     :-1 ℤ.+ +∣σ∣ ℤ.+ -x ℤ.+ ⟦t⟧ x ℤ.- exp
+       ≡⟨ cong (λ e → e ℤ.+ -x ℤ.+ ⟦t⟧ x ℤ.- exp) (ZProp.+-comm :-1 +∣σ∣) ⟩
+     +∣σ∣ ℤ.+ :-1 ℤ.+ -x ℤ.+ ⟦t⟧ x ℤ.- exp
+       ≡⟨ cong (ℤ._- exp) (ZProp.+-assoc (+∣σ∣ ℤ.+ :-1) -x (⟦t⟧ x)) ⟩
+     +∣σ∣ ℤ.+ :-1 ℤ.+ (-x ℤ.+ ⟦t⟧ x) ℤ.- exp
+       ≡⟨ cong (ℤ._- exp) (ZProp.+-assoc +∣σ∣ :-1 (-x ℤ.+ ⟦t⟧ x)) ⟩
+     +∣σ∣ ℤ.+ exp ℤ.- exp
+       ≡⟨ ZProp.+-assoc +∣σ∣ exp (ℤ.- exp) ⟩
+     +∣σ∣ ℤ.+ (exp ℤ.- exp)
+       ≡⟨ cong (ℤ._+_ +∣σ∣) (ZProp.+-inverseʳ exp) ⟩
+     +∣σ∣ ℤ.+ :+0
+       ≡⟨ ZProp.+-identityʳ +∣σ∣ ⟩
+     +∣σ∣
        ∎ where open ≡-Reasoning
 
    lb : bd ℤ.≤ :+0
@@ -115,6 +132,39 @@ step-cooper₁ {σ = σ , σ≠0} (:-1 [ ∣-1∣ ]*var0+ e :≤0) divφ x ρ ¬
 
    k = proj₁ int
    j = Fin.cast (cong ℕ.suc (cong ℤ.∣_∣ eq)) k
+
+   hyp : -x ℤ.+ (:-1 ℤ.+ ⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ k) ≡ :+0
+   hyp = begin
+     -x ℤ.+ (:-1 ℤ.+ ⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ k)
+       ≡⟨ sym (ZProp.+-assoc -x (:-1 ℤ.+ ⟦t⟧ x) (ℤ.+ Fin.toℕ k)) ⟩
+     -x ℤ.+ (:-1 ℤ.+ ⟦t⟧ x) ℤ.+ ℤ.+ Fin.toℕ k
+       ≡⟨ cong (ℤ._+ ℤ.+ Fin.toℕ k) (sym (ZProp.+-assoc -x :-1 (⟦t⟧ x))) ⟩
+     -x ℤ.+ :-1 ℤ.+ ⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ k
+       ≡⟨ cong (λ e → e ℤ.+ ⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ k) (ZProp.+-comm -x :-1) ⟩
+     :-1 ℤ.+ -x ℤ.+ ⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ k
+       ≡⟨ cong (ℤ._+ ℤ.+ Fin.toℕ k) (ZProp.+-assoc :-1 -x (⟦t⟧ x)) ⟩
+     :-1 ℤ.+ (-x ℤ.+ ⟦t⟧ x) ℤ.+ ℤ.+ Fin.toℕ k
+       ≡⟨ proj₂ int ⟩
+     :+0 ∎ where open ≡-Reasoning
+
+   ⋯-x≡0 : x ≡ ⟦ proj₁ e-1 ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j
+   ⋯-x≡0 = begin
+     x
+       ≡⟨ sym (ZProp.neg-involutive x) ⟩
+     ℤ.- (ℤ.- x)
+       ≡⟨ cong ℤ.-_ (APR.+-left-inverse-unique _ _ hyp) ⟩
+     ℤ.- (ℤ.- (:-1 ℤ.+ ⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ k))
+       ≡⟨ ZProp.neg-involutive _ ⟩
+     :-1 ℤ.+ ⟦t⟧ x ℤ.+ ℤ.+ Fin.toℕ k
+       ≡⟨ cong (ℤ._+ ℤ.+ Fin.toℕ k) (ZProp.+-comm :-1 (⟦t⟧ x)) ⟩
+     ⟦t⟧ x ℤ.+ :-1 ℤ.+ ℤ.+ Fin.toℕ k
+       ≡⟨ cong (λ e → e ℤ.+ :-1 ℤ.+ ℤ.+ Fin.toℕ k) (lin-ext₁ e x :+0 ρ) ⟩
+     ⟦t⟧ :+0 ℤ.+ :-1 ℤ.+ ℤ.+ Fin.toℕ k
+       ≡⟨ cong (λ e → ⟦t⟧ :+0 ℤ.+ :-1 ℤ.+ ℤ.+ e) (sym (FProp.toℕ-cast _ k)) ⟩
+     ⟦t⟧ :+0 ℤ.+ :-1 ℤ.+ ℤ.+ Fin.toℕ j
+       ≡⟨ cong (ℤ._+ ℤ.+ Fin.toℕ j) (⟦ e ⟧+E⟦ val :-1 ⟧ (:+0 ∷ ρ)) ⟩
+     ⟦ proj₁ e-1 ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j
+       ∎ where open ≡-Reasoning
 
 {-
    ⋯-x≡0 : ⟦t⟧ x ℤ.+ (ℤ.+ Fin.toℕ j) ℤ.- x ≡ ℤ.+ 0
