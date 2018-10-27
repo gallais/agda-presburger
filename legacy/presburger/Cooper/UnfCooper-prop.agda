@@ -1,36 +1,40 @@
 module Cooper.UnfCooper-prop where
 
-import Cooper.UnfCooper as UC
 open import Representation
 open import Properties
-open import Properties-prop using (isunitary-islin ; islin-isnnf)
 open import Semantics
-open import Equivalence using (_↔_ ; _←_ ; _⇔_)
+open import Equivalence
+open import AllmostFree-prop
+open import Minusinf
+open import Cooper.UnfCooper
 
-import Normalization.Linearization as Lin
-import Normalization.Linearization-prop as Linp
-open import AllmostFree-prop using (lcm-dvd ; Af0-Fin-reduc)
-open import Disjunction using (Finite-disjunction′ ; Fin-dij)
-open import Disjunction-prop using (Finite-disjunction′-sem ; Fin-dij-sem)
-import Bset as BS
-open import Cooper using (cooper₁-simpl)
-import Minusinf as M
-import Decidability as D
-import List-tools as Lt -- (b∈-Lmap-compat)
-import Fin-prop as F -- (allFin-inv)
+open import Data.Product as Prod
+open import Data.Sum as Sum
+open import Data.Nat as ℕ using (ℕ)
+open import Data.Integer as ℤ using (ℤ)
 
-open import Data.Nat as Nat renaming (suc to ℕs ; pred to ℕp ; _+_ to _ℕ+_ ; _*_ to _ℕ*_ ; _≤_ to _ℕ≤_ ; _⊔_ to _ℕ⊔_ ; _⊓_ to _ℕ⊓_ ; _≤?_ to _ℕ≤?_ ; _≟_ to _ℕ≟_)
-open import Data.Integer as Int renaming (suc to ℤs ; pred to ℤp ; _+_ to _ℤ+_ ; _*_ to _ℤ*_ ; _-_ to _ℤ-_ ; _≤_ to _ℤ≤_ ; _⊔_ to _ℤ⊔_ ; _⊓_ to _ℤ⊓_ ; _≤?_ to _ℤ≤?_ ; _≟_ to _ℤ≟_)
-open import Data.Fin renaming (suc to Fs ; _≤_ to _F≤_)
+open import Function
 
-import Data.Product as P
-open import Product
-open import Data.Sum using (_⊎_ ; [_,_]′ ; inj₁ ; inj₂)
-import Data.Vec as V --renaming (map to Vmap)
-import Data.List as L --using () renaming (map to Lmap ; _∷_ to _L∷_)
 
-open import Relation.Nullary
-open import Relation.Binary.PropositionalEquality
+-- pre-Unf-cooper₂ : ∀ {n} (φ : Unf (ℕs n)) →
+--   ex (proj₁ φ) ⇔ (proj₁ (UC.Unf-qelim-l φ)) or (ex (proj₁ (M.minusinf φ)))
+
+⟦Unf-qelim-l_⟧ : ∀ {n f} (φ : Unit {ℕ.suc n} f) →
+                 :∃ f ⇔ (proj₁ (Unf-qelim-l φ) :∨ (:∃ proj₁ (var0⟶-∞ φ)))
+⟦Unf-qelim-l φ ⟧ ρ = {!!}
+
+
+⟦Unf-qelim_⟧ : ∀ {n f} (φ : Unit {ℕ.suc n} f) → :∃ f ⇔ proj₁ (Unf-qelim φ)
+⟦Unf-qelim φ ⟧ ρ =
+  let (f^-∞ , φ^-∞) = var0⟶-∞ φ
+      (σ , divφ^-∞) = lcm-:∣′ φ^-∞
+      (p₁ , q₁) = ⟦⋁ φ^-∞ when σ :| divφ^-∞ ⟧ ρ
+      (p₂ , q₂) = ⟦Unf-qelim-l φ ⟧ ρ
+  in Sum.map₂ p₁ ∘′ p₂
+   , [ q₂ ∘′ inj₁ , q₂ ∘′ inj₂ ∘′ q₁ ]′
+
+{-
+
 
 abstract
 
