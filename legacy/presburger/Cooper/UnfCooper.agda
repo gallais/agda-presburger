@@ -5,33 +5,31 @@ open import Properties
 open import Disjunction
 open import Bset
 open import Cooper
-import Normalization.Linearization as Lin
-open import Minusinf
 open import AllmostFree-prop
-import Properties-prop as Pr
+open import Normalization.Linearisation
+open import Minusinf
+open import Properties-prop
 
-open import Data.Nat as Nat renaming (suc to ℕs ; pred to ℕp ; _+_ to _ℕ+_ ; _*_ to _ℕ*_ ; _≤_ to _ℕ≤_ ; _⊔_ to _ℕ⊔_ ; _⊓_ to _ℕ⊓_ ; _≤?_ to _ℕ≤?_ ; _≟_ to _ℕ≟_)
-open import Data.Integer as Int renaming (suc to ℤs ; pred to ℤp ; _+_ to _ℤ+_ ; _*_ to _ℤ*_ ; _-_ to _ℤ-_ ; _≤_ to _ℤ≤_ ; _⊔_ to _ℤ⊔_ ; _⊓_ to _ℤ⊓_ ; _≤?_ to _ℤ≤?_ ; _≟_ to _ℤ≟_)
-open import Data.Fin renaming (suc to Fs ; _≤_ to _F≤_)
+open import Data.Nat as ℕ using (ℕ)
+open import Data.Integer as ℤ using (ℤ)
+open import Data.Fin as Fin using (Fin)
+import Fin-prop as FProp
 
-open import Product
-import Data.Vec as V
-import Data.List as L
-import Fin-prop as F
+open import Data.Product as Prod
+import Data.Vec as Vec
+import Data.List as List
 
 open import Relation.Binary.PropositionalEquality
 
-Unf-qelim-l₁ : ∀ {n} (φ : Unf (ℕs n)) (j : Fin (jset φ)) → Lin n
-Unf-qelim-l₁ φ j = Finite-disjunction′ (proj₁ φ , Pr.isunitary-islin (proj₂ φ)) (bjset φ j)
+Unf-qelim-l₁ : ∀ {n f} (φ : Unit {ℕ.suc n} f) (j : Fin (jset φ)) → ∃ (Lin {n})
+Unf-qelim-l₁ φ j = ⋁ Vec.fromList (List.map (λ e → ⟨ proj₂ e /0⟩ Unit-Lin φ) (bjset φ j))
 
-Unf-qelim-l : ∀ {n} (φ : Unf (ℕs n)) → Lin n
-Unf-qelim-l φ with lcm-dvd (minusinf φ) | Unf-qelim-l₁ φ
-... | δ | λφ = Fin-dij λφ (V.allFin (ℕs (δ-extract δ)))
+Unf-qelim-l : ∀ {n f} → Unit {ℕ.suc n} f → ∃ (Lin {n})
+Unf-qelim-l φ = ⋁ Vec.map (Unf-qelim-l₁ φ) (Vec.allFin (jset φ))
 
-Unf-qelim-r : ∀ {n} (φ : Unf (ℕs n)) → Lin n
-Unf-qelim-r φ with lcm-dvd (minusinf φ)
-... | δ = Finite-disjunction {_} {_} {0} (proj₁ (minusinf φ) , (Pr.isunitary-islin (Pr.allmost-free0-isunitary (proj₂ (minusinf φ))))) (V.map (λ u → (val (+ toℕ u) , val-islinn-i)) (V.allFin (δ-extract δ)))
+Unf-qelim-r : ∀ {n f} → Unit {ℕ.suc n} f → ∃ (Lin {n})
+Unf-qelim-r φ = ⋁ Vec.map (λ e → ⟨ val {n₀ = 1} (ℤ.+ Fin.toℕ e) /0⟩ Unit-Lin φ)
+                 (Vec.allFin (jset φ))
 
-Unf-qelim : ∀ {n} (φ : Unf (ℕs n)) → Lin n
-Unf-qelim φ with Unf-qelim-l φ | Unf-qelim-r φ
-... | φ₁ , Hφ₁ | φ₂ , Hφ₂ = φ₁ or φ₂ , or-islin Hφ₁ Hφ₂
+Unf-qelim : ∀ {n f} → Unit {ℕ.suc n} f → ∃ (Lin {n})
+Unf-qelim φ = -, proj₂ (Unf-qelim-l φ) :∨ proj₂ (Unf-qelim-r φ)
