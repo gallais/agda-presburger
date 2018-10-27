@@ -2,7 +2,10 @@ module Bset where
 
 open import Representation
 open import Properties
+open import Properties-prop
 open import Normalization.Linearisation
+open import Minusinf
+open import AllmostFree-prop
 
 open import Data.Nat as ℕ using (ℕ)
 open import Data.Integer as ℤ using (ℤ)
@@ -25,3 +28,6 @@ bset _ = []
 
 bjset : ∀ {n p φ} → Unit {n} φ → Fin p → List (∃ (Lin-E {n} 1))
 bjset φ j = List.map ((_+E val (ℤ.+ Fin.toℕ j)) ∘ proj₂) (bset φ)
+
+jset : ∀ {n f} → Unit {n} f → ℕ
+jset φ = ℕ.suc ℤ.∣ proj₁ (proj₁ $ lcm-:∣′ (proj₂ $ var0⟶-∞ φ)) ∣
