@@ -28,7 +28,7 @@ Unf-qelim-l : ∀ {n f} → Unit {ℕ.suc n} f → ∃ (Lin {n})
 Unf-qelim-l φ = ⋁ Vec.map (Unf-qelim-l₁ φ) (Vec.allFin (jset φ))
 
 Unf-qelim-r : ∀ {n f} → Unit {ℕ.suc n} f → ∃ (Lin {n})
-Unf-qelim-r φ = ⋁[k< jset φ ] Unit-Lin φ
+Unf-qelim-r φ = ⋁[k< ℕ.pred (jset φ) ] (Free0-Lin (proj₂ (var0⟶-∞ φ)))
 
 Unf-qelim : ∀ {n f} → Unit {ℕ.suc n} f → ∃ (Lin {n})
 Unf-qelim φ = -, proj₂ (Unf-qelim-l φ) :∨ proj₂ (Unf-qelim-r φ)
