@@ -107,11 +107,13 @@ import Relation.Binary.SetoidReasoning as SR
   , [ proj₂ (⟦Unf-qelim-l₁ φ ⟧ ρ) ∘′ inj₁ ∘′ proj₁ (⟦⋁[k< _ ] Unf-qelim-l₁ φ ⟧ ρ)
     , proj₂ (⟦Unf-qelim-l₁ φ ⟧ ρ) ∘′ inj₂ ]′
 
-⟦Unf-qelim_⟧ : ∀ {n f} (φ : Unit {ℕ.suc n} f) → :∃ f ⇔ proj₁ (Unf-qelim φ)
-⟦Unf-qelim φ ⟧ ρ =
-  let (f^-∞ , φ^-∞) = var0⟶-∞ φ
-      (σ , divφ^-∞) = lcm-:∣′ φ^-∞
-      (p₁ , q₁) = ⟦⋁ φ^-∞ when σ :| divφ^-∞ ⟧ ρ
-      (p₂ , q₂) = ⟦Unf-qelim-l φ ⟧ ρ
-  in Sum.map₂ p₁ ∘′ p₂
-   , [ q₂ ∘′ inj₁ , q₂ ∘′ inj₂ ∘′ q₁ ]′
+abstract
+
+  ⟦Unf-qelim_⟧ : ∀ {n f} (φ : Unit {ℕ.suc n} f) → :∃ f ⇔ proj₁ (Unf-qelim φ)
+  ⟦Unf-qelim φ ⟧ ρ =
+    let (f^-∞ , φ^-∞) = var0⟶-∞ φ
+        (σ , divφ^-∞) = lcm-:∣′ φ^-∞
+        (p₁ , q₁) = ⟦⋁ φ^-∞ when σ :| divφ^-∞ ⟧ ρ
+        (p₂ , q₂) = ⟦Unf-qelim-l φ ⟧ ρ
+    in Sum.map₂ p₁ ∘′ p₂
+     , [ q₂ ∘′ inj₁ , q₂ ∘′ inj₂ ∘′ q₁ ]′

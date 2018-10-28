@@ -1,25 +1,32 @@
 module Cooper.QfreeCooper-prop where
 
-open import Product
-open import Equivalence
-
 open import Representation
 open import Properties
 open import Properties-prop
 open import Semantics
+open import Equivalence
 
-import Normalization.Negation as Neg
-import Normalization.Negation-prop as Negp
-import Cooper.NnfCooper as NC
-import Cooper.NnfCooper-prop as NCp
-open import QfreeCooper
+open import Normalization.Negation
+open import Normalization.Negation-prop
+open import Cooper.NnfCooper
+open import Cooper.NnfCooper-prop
+open import Cooper.QfreeCooper
 
-import Data.Nat as Nat
-open import Data.Integer
-import Data.Vec as V
-import Data.Product as P
+open import Data.Nat as ℕ using (ℕ)
+open import Data.Integer as ℤ using (ℤ)
+open import Data.Vec
+open import Data.Product
+open import Relation.Binary.SetoidReasoning
 
 abstract
-  Qfree-cooper : ∀ {n} (φ : Qfree (Nat.suc n)) → ex (proj₁ φ ) ⇔ proj₁ (qelim φ)
-  Qfree-cooper φ ρ with NC.Nnf-qelim (Neg.nnf φ) | Negp.nnf-sem φ ρ | NCp (nnf φ) ρ
-  ... | ψ , Hψ | P._,_ P₁ Q₁ | P._,_ P₂ Q₂ = ?
+
+  ⟦qelim_⟧ : ∀ {n f} (φ : QFree {ℕ.suc n} f) → :∃ f ⇔ proj₁ (qelim φ)
+  ⟦qelim φ ⟧ ρ = begin⟨ ↔-setoid ⟩
+    ⟦ :∃ f ⟧ ρ            ≈⟨ ↔Σ (λ x → ⟦nnf φ ⟧ (x ∷ ρ)) ⟩
+    ⟦ :∃ g ⟧ ρ            ≈⟨ ⟦Nnf-qelim ψ ⟧ ρ ⟩
+    ⟦ proj₁ (qelim φ) ⟧ ρ ∎ where
+
+    f     = toForm QFree φ
+    g∧ψ   = nnf φ
+    g     = proj₁ g∧ψ
+    ψ     = proj₂ g∧ψ

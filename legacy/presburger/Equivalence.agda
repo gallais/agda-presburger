@@ -75,6 +75,10 @@ _↔×_ : ∀ {P Q R S} → P ↔ Q → R ↔ S → (P × R) ↔ (Q × S)
 proj₁ (f ↔× g) = Prod.map (proj₁ f) (proj₁ g)
 proj₂ (f ↔× g) = Prod.map (proj₂ f) (proj₂ g)
 
+↔Σ_ : ∀ {A P Q} → (∀ a → P a ↔ Q a) → (Σ A P) ↔ (Σ A Q)
+proj₁ (↔Σ f) = Prod.map₂ (proj₁ (f _))
+proj₂ (↔Σ f) = Prod.map₂ (proj₂ (f _))
+
 ↔¬_ : ∀ {P Q} → P ↔ Q → ¬ P ↔ ¬ Q
 proj₁ (↔¬ f) = contraposition (proj₂ f)
 proj₂ (↔¬ f) = contraposition (proj₁ f)
