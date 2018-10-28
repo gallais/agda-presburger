@@ -1,33 +1,62 @@
 module Cooper.LinCooper-prop where
 
-import Cooper.LinCooper as LC
-import Cooper.UnfCooper-prop as UC
 open import Representation
 open import Properties
 open import Semantics
-open import Equivalence using (_⇔_)
-import Normalization.Unitarization as Uni
-import Normalization.Unitarization-prop as Unip
+open import Semantics-prop
+open import Equivalence
+open import Normalization.LCMReduction
+open import Normalization.Unitarization
+open import Normalization.Unitarization-prop
+open import Cooper.LinCooper
+open import Cooper.UnfCooper-prop
 
-open import Data.Nat as Nat renaming (suc to ℕs ; pred to ℕp ; _+_ to _ℕ+_ ; _*_ to _ℕ*_ ; _≤_ to _ℕ≤_ ; _⊔_ to _ℕ⊔_ ; _⊓_ to _ℕ⊓_ ; _≤?_ to _ℕ≤?_ ; _≟_ to _ℕ≟_)
-open import Data.Integer as Int renaming (suc to ℤs ; pred to ℤp ; _+_ to _ℤ+_ ; _*_ to _ℤ*_ ; _-_ to _ℤ-_ ; _≤_ to _ℤ≤_ ; _⊔_ to _ℤ⊔_ ; _⊓_ to _ℤ⊓_ ; _≤?_ to _ℤ≤?_ ; _≟_ to _ℤ≟_)
-open import Data.Fin renaming (suc to Fs ; _≤_ to _F≤_)
+open import Data.Nat as ℕ using (ℕ)
+open import Data.Integer as ℤ using (ℤ)
+open import Data.Integer.Divisibility
+import Data.Integer.Properties as ZProp
+import Data.Integer.Divisibility.Properties as ZdivProp
+open import Data.Fin as Fin using (Fin)
 
-import Integer.Structures as IntStruct using (isCommutativeSemiring ; ℤ+-isGroup)
+open import Data.Product
+open import Data.Vec using ([]; _∷_)
+open import Data.Vec.Relation.Pointwise.Inductive as VP
+open import Relation.Binary.PropositionalEquality as P
+open import Relation.Binary.SetoidReasoning
 
-import Data.Product as P
-open import Product
-import Data.Vec as V
+⟦Lin-qelim_⟧ : ∀ {n f} (φ : Lin {ℕ.suc n} f) → :∃ f ⇔ proj₁ (Lin-qelim φ)
+⟦Lin-qelim φ ⟧ ρ = begin⟨ ↔-setoid ⟩
+  ⟦ :∃ f ⟧ ρ                ≈⟨ forward , backward ⟩
+  ⟦ :∃ σ∣var0 :∧ g ⟧ ρ      ≈⟨ ⟦Unf-qelim (σ∣var0-u :∧ ψ) ⟧ ρ ⟩
+  ⟦ proj₁ (Lin-qelim φ) ⟧ ρ ∎ where
 
-open import Relation.Binary.PropositionalEquality
-import Algebra.Structures as Struct
+  f        = toForm Lin φ
+  σ∣φ      = div φ
+  σ∧≠0     = proj₁ σ∣φ
+  σ        = proj₁ σ∧≠0
+  σ≠0      = proj₂ σ∧≠0
+  divφ     = proj₂ σ∣φ
+  g∧ψ      = unit divφ
+  ⟦g∧ψ⟧    = ⟦unit divφ ⟧ ρ
+  g        = proj₁ g∧ψ
+  ψ        = proj₂ g∧ψ
+  σ∣var0   = σ :| :+1 :* var Fin.zero :+ val (ℤ.+ 0)
+  σ∣var0-u = σ≠0 :| :+1 [ ∣+1∣ ]*var0+ val (ℤ.+ 0)
 
-private module ℤ+g = Struct.IsGroup IntStruct.ℤ+-isGroup
-private module ℤsr = Struct.IsCommutativeSemiring IntStruct.isCommutativeSemiring
-private module ℤ*m = Struct.IsCommutativeMonoid ℤsr.*-isCommutativeMonoid
+  σ∣σ*x : ∀ x → σ ∣′ x ↔ ⟦ σ∣var0 ⟧ (x ∷ ρ)
+  σ∣σ*x x = begin⟨ ↔-setoid ⟩
+    σ ∣′ x                   ≡⟨ cong (σ ∣′_) (P.sym (ZProp.*-identityˡ x)) ⟩
+    σ ∣′ :+1 ℤ.* x           ≡⟨ cong (σ ∣′_) (P.sym (ZProp.+-identityʳ (:+1 ℤ.* x))) ⟩
+    σ ∣′ :+1 ℤ.* x ℤ.+ ℤ.+ 0 ∎
 
-abstract
-  Lin-cooper : ∀ {n} (φ : Lin (ℕs n)) → ex (proj₁ φ) ⇔ proj₁ (LC.Lin-qelim φ)
-  Lin-cooper φ ρ with Uni.lcmφ φ | Uni.unitarise φ | Unip.unitarise-sem φ ρ
-  ... | P._,_ (l , neq) Hl | ψ , Hψ | P._,_ P₁ Q₁ with UC.Unf-cooper (((l dvd (((+ 1) :* var zero) :+ val (+ 0))) and ψ) , and-isunitary (dvd-isunitary neq (var0-isunit refl val-islinn-i)) Hψ) ρ
-  ... | P._,_ P₂ Q₂ = P._,_ (λ h → P₂ (P._,_ (P.proj₁ (P₁ h)) (P._,_ (P._,_ (P.proj₁ (P.proj₁ (P.proj₂ (P₁ h)))) (subst (λ u → u ≡ l ℤ* (P.proj₁ (P.proj₁ (P.proj₂ (P₁ h))))) (sym ((P.proj₂ (ℤ+g.identity)) (sign (P.proj₁ (P₁ h)) ◃ ∣ P.proj₁ (P₁ h) ∣ ℕ+ 0))) (subst (λ u → u ≡ l ℤ* (P.proj₁ (P.proj₁ (P.proj₂ (P₁ h))))) (sym (ℤ*m.identityˡ (P.proj₁ (P₁ h)))) (P.proj₂ (P.proj₁ (P.proj₂ (P₁ h))))))) (P.proj₂ (P.proj₂ (P₁ h)))))) (λ h → Q₁ ((P._,_ (P.proj₁ (Q₂ h)) (P._,_ (P._,_ (P.proj₁ (P.proj₁ (P.proj₂ (Q₂ h)))) (subst (λ u → u ≡ l ℤ* (P.proj₁ (P.proj₁ (P.proj₂ (Q₂ h))))) (ℤ*m.identityˡ (P.proj₁ (Q₂ h))) (subst (λ u → u ≡ l ℤ* (P.proj₁ (P.proj₁ (P.proj₂ (Q₂ h))))) ((P.proj₂ (ℤ+g.identity)) (sign (P.proj₁ (Q₂ h)) ◃ ∣ P.proj₁ (Q₂ h) ∣ ℕ+ 0)) (P.proj₂ (P.proj₁ (P.proj₂ (Q₂ h))))))) (P.proj₂ (P.proj₂ (Q₂ h)))))))
+  forward : ⟦ :∃ f ⟧ ρ → ⟦ :∃ σ∣var0 :∧ g ⟧ ρ
+  forward (x , pr) = σ ℤ.* x
+                   , proj₁ (σ∣σ*x (σ ℤ.* x)) (ZdivProp.∣′m⇒∣′m*n x ZdivProp.∣′-refl)
+                   , proj₁ ⟦g∧ψ⟧ pr
+
+  backward : ⟦ :∃ σ∣var0 :∧ g ⟧ ρ → ⟦ :∃ f ⟧ ρ
+  backward (x , σ∣var0 , pr) = k , proj₂ ⟦g∧ψ⟧ (⟦ g ⟧-ext₁ x≡σ*k pr) where
+
+    σ|x   = proj₂ (σ∣σ*x x) σ∣var0
+    k     = quotient σ|x
+    x≡σ*k = P.trans (_∣′_.equality σ|x) (ZProp.*-comm k σ)
