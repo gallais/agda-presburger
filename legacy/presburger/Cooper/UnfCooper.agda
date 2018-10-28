@@ -13,7 +13,6 @@ open import Properties-prop
 open import Data.Nat as ℕ using (ℕ)
 open import Data.Integer as ℤ using (ℤ)
 open import Data.Fin as Fin using (Fin)
-import Fin-prop as FProp
 
 open import Data.Product as Prod
 import Data.Vec as Vec
