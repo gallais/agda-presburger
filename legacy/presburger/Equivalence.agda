@@ -6,6 +6,7 @@ module Equivalence where
 open import Data.Nat
 open import Data.Vec
 open import Function
+open import Data.Empty
 open import Data.Product as Prod
 open import Data.Sum as Sum
 open import Relation.Nullary
@@ -55,6 +56,18 @@ proj₁ (deMorgan-→ Q?) f with Q?
 ... | no ¬q = inj₁ (contraposition f ¬q)
 proj₂ (deMorgan-→ Q?) = [ flip contradiction , const ]′
 
+deMorgan-¬→ : ∀ {P Q} → Dec P → ¬ (P → Q) ↔ (P × ¬ Q)
+proj₁ (deMorgan-¬→ P?) ¬p→q with P?
+... | yes p = p , ⊥-elim ∘ ¬p→q ∘ const
+... | no ¬p = ⊥-elim (¬p→q (flip contradiction ¬p))
+proj₂ (deMorgan-¬→ P?) (p , ¬q) p→q = contradiction (p→q p) ¬q
+
+deMorgan-∀ : ∀ {A P} → (∀ a → Dec (P a)) → ((a : A) → P a) ↔ ¬ ∃ (¬_ ∘′ P)
+proj₁ (deMorgan-∀ P?) p (x , ¬p) = ⊥-elim (¬p (p x))
+proj₂ (deMorgan-∀ P?) ¬∃¬p a with P? a
+... | yes pa = pa
+... | no ¬pa = ⊥-elim (¬∃¬p (a , ¬pa))
+
 _⇒_ : ∀ {n}(φ₁ φ₂ : form n) → Set
 φ₁ ⇒ φ₂ = ∀ ρ → ⟦ φ₁ ⟧ ρ → ⟦ φ₂ ⟧ ρ
 
@@ -75,9 +88,13 @@ _↔×_ : ∀ {P Q R S} → P ↔ Q → R ↔ S → (P × R) ↔ (Q × S)
 proj₁ (f ↔× g) = Prod.map (proj₁ f) (proj₁ g)
 proj₂ (f ↔× g) = Prod.map (proj₂ f) (proj₂ g)
 
-↔Σ_ : ∀ {A P Q} → (∀ a → P a ↔ Q a) → (Σ A P) ↔ (Σ A Q)
+↔Σ : ∀ {A P Q} → (∀ a → P a ↔ Q a) → (Σ A P) ↔ (Σ A Q)
 proj₁ (↔Σ f) = Prod.map₂ (proj₁ (f _))
 proj₂ (↔Σ f) = Prod.map₂ (proj₂ (f _))
+
+↔∀ : ∀ {A : Set} {P Q : A → Set} → ((a : A) → P a ↔ Q a) → (∀ a → P a) ↔ (∀ a → Q a)
+proj₁ (↔∀ f) p a = proj₁ (f a) (p a)
+proj₂ (↔∀ f) q a = proj₂ (f a) (q a)
 
 ↔¬_ : ∀ {P Q} → P ↔ Q → ¬ P ↔ ¬ Q
 proj₁ (↔¬ f) = contraposition (proj₂ f)

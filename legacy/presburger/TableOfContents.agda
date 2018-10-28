@@ -44,3 +44,18 @@ import Minusinf
 import AllmostFree-prop
 -- Formulas not satisfied by a finite disjunction hold at -∞ if they hold at all
 import Cooper
+
+--------------------------------------------------------------------------------
+-- Quantifier elimination
+
+-- for each intermediate representation
+import Cooper.UnfCooper
+import Cooper.LinCooper
+import Cooper.NnfCooper
+
+-- finally for QFree formulas and therefore all formulas
+import Normalization.Qelimination
+
+--------------------------------------------------------------------------------
+-- Decision procedure
+import Presburger
