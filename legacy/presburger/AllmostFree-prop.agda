@@ -121,13 +121,13 @@ lcm-:∣′ (φ :∨ ψ) =
 
 
 ⟦⋁_when_:|_⟧_ : ∀ {n f} (φ : Free0 {ℕ.suc n} f) (σ : Notnull) → All∣′ σ f → ∀ ρ →
-                ∃ (λ (x : ℤ) → ⟦ f ⟧ (x ∷ ρ))
-              ↔ ⟦ proj₁ (⋁[k< ℤ.∣ proj₁ σ ∣ ] Free0-Lin φ) ⟧ ρ
+                ⟦ :∃ f ⟧ ρ
+              ↔ ⟦ proj₁ (⋁[k< ℤ.∣ proj₁ σ ∣ ]⟨k/0⟩ Free0-Lin φ) ⟧ ρ
 ⟦⋁ φ when σ :| divφ ⟧ ρ = begin⟨ ↔-setoid ⟩
   let f = toForm Free0 φ in
   ∃ (λ x → ⟦ f ⟧ (x ∷ ρ))
     ↔⟨ ⟦finite φ when σ :| divφ ⟧ ρ ⟩
   ∃ (λ k → ⟦ f ⟧ (ℤ.pos (Fin.toℕ k) ∷ ρ))
-    ↔⟨ ↔-sym (⟦⋁[k< ℤ.∣ proj₁ σ ∣ ] Free0-Lin φ ⟧ ρ) ⟩
-  ⟦ proj₁ (⋁[k< ℤ.∣ proj₁ σ ∣ ] Free0-Lin φ) ⟧ ρ
+    ↔⟨ ↔-sym (⟦⋁[k< ℤ.∣ proj₁ σ ∣ ]⟨k/0⟩ Free0-Lin φ ⟧ ρ) ⟩
+  ⟦ proj₁ (⋁[k< ℤ.∣ proj₁ σ ∣ ]⟨k/0⟩ Free0-Lin φ) ⟧ ρ
     ∎ where open ≋-Reasoning

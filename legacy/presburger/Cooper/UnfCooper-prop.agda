@@ -2,27 +2,112 @@ module Cooper.UnfCooper-prop where
 
 open import Representation
 open import Properties
+open import Properties-prop
 open import Semantics
+open import Semantics-prop
 open import Equivalence
 open import AllmostFree-prop
 open import Minusinf
+open import Disjunction
+open import Disjunction-prop
+open import Cooper
 open import Cooper.UnfCooper
+open import Bset
+open import Normalization.Linearisation
+open import Normalization.Linearisation-prop
 
+import Data.List as List
+open import Data.List.Any as LAny using (Any; here; there)
+import Data.List.Membership.Propositional as LMem
+import Data.List.Any.Properties as LAnyProp
+import Data.Vec.Any as VAny
 open import Data.Product as Prod
 open import Data.Sum as Sum
+open import Data.Vec as Vec using (Vec; []; _∷_)
+import Data.Vec.Any.Properties as VAnyProp
+open import Data.Vec.Relation.Pointwise.Inductive as VecEq using (_∷_)
+
 open import Data.Nat as ℕ using (ℕ)
 open import Data.Integer as ℤ using (ℤ)
+open import Data.Fin as Fin using (Fin)
+import Data.Fin.Properties as FProp
 
 open import Function
+open import Relation.Nullary
+open import Relation.Binary.PropositionalEquality
+import Relation.Binary.SetoidReasoning as SR
 
+⟦Unf-qelim-l₁_⟧ : ∀ {n f} (φ : Unit {ℕ.suc n} f) ρ →
+    ⟦ :∃ f ⟧ ρ ↔ ((∃ λ (j : Fin (jset φ)) → ⟦ proj₁ (Unf-qelim-l₁ φ j) ⟧ ρ)
+               ⊎ ⟦ :∃ (proj₁ (var0⟶-∞ φ)) ⟧ ρ)
+⟦Unf-qelim-l₁ φ ⟧ ρ = forward , backward where
 
--- pre-Unf-cooper₂ : ∀ {n} (φ : Unf (ℕs n)) →
---   ex (proj₁ φ) ⇔ (proj₁ (UC.Unf-qelim-l φ)) or (ex (proj₁ (M.minusinf φ)))
+  f = toForm Unit φ
+
+  ⟦_⟧ρ : ∃ Lin → Set
+  ⟦ φ ⟧ρ = ⟦ proj₁ φ ⟧ ρ
+
+  _+Fin_ : ∀ {n} (e : ∃ (Lin-E {n} 1)) (j : Fin (jset φ)) → ∃ (Lin-E {n} 1)
+  e +Fin j = proj₂ e +E val (ℤ.+ Fin.toℕ j)
+
+  ⟨_/0⟩φ : (e : ∃ (Lin-E 1)) → ∃ Lin
+  ⟨ e /0⟩φ = ⟨ proj₂ e /0⟩ Unit-Lin φ
+
+  φs : (j : Fin (jset φ)) → Vec (∃ Lin) _
+  φs j = Vec.fromList
+       $ List.map ⟨_/0⟩φ
+       $ List.map (_+Fin j)
+       $ bset φ
+
+  ⟦_⟧+Fin : ∃ (Lin-E 1) → Fin _ → ℤ
+  ⟦ b ⟧+Fin j = ⟦ proj₁ b ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j
+
+  equiv : ∀ j → ⟦ proj₁ (Unf-qelim-l₁ φ j) ⟧ ρ
+        ↔ Any (λ b → ⟦ f ⟧ (⟦ b ⟧+Fin j ∷ ρ)) (bset φ)
+  equiv j = begin⟨ ↔-setoid ⟩
+    ⟦ proj₁ (Unf-qelim-l₁ φ j) ⟧ ρ
+      ≈⟨ ⟦⋁ φs j ⟧ ρ ⟩
+    VAny.Any ⟦_⟧ρ (φs j)
+      ≈⟨ VAnyProp.fromList⁻ , VAnyProp.fromList⁺ ⟩
+    Any ⟦_⟧ρ (List.map ⟨_/0⟩φ (List.map (_+Fin j) (bset φ)))
+      ≈⟨ LAnyProp.map⁻ , LAnyProp.map⁺ ⟩
+    Any (⟦_⟧ρ ∘ ⟨_/0⟩φ) (List.map (_+Fin j) (bset φ))
+      ≈⟨ LAnyProp.map⁻ , LAnyProp.map⁺ ⟩
+    Any (⟦_⟧ρ ∘ ⟨_/0⟩φ ∘ (_+Fin j)) (bset φ)
+      ≈⟨ LAny.map (proj₂ (⟦⟨ _ /0⟩ Unit-Lin φ ⟧ ρ))
+       , LAny.map (proj₁ (⟦⟨ _ /0⟩ Unit-Lin φ ⟧ ρ)) ⟩
+    Any (λ z → ⟦ f ⟧ ((⟦ (z +Fin j) .proj₁ ⟧e (:+0 ∷ ρ)) ∷ ρ)) (bset φ)
+      ≈⟨ LAny.map (λ {b} → ⟦ f ⟧-ext (VecEq.sym sym $ env-eq b))
+       , LAny.map (λ {b} → ⟦ f ⟧-ext (env-eq b)) ⟩
+    Any (λ b → ⟦ f ⟧ (⟦ b ⟧+Fin j ∷ ρ)) (bset φ) ∎ where
+
+      open SR
+
+      env-eq : ∀ t → VecEq.Pointwise _≡_ (⟦ t ⟧+Fin j                     ∷ ρ)
+                                         (⟦ proj₁ (t +Fin j) ⟧e (:+0 ∷ ρ) ∷ ρ)
+      env-eq t = (⟦ proj₂ t ⟧+E⟦ val (ℤ.+ Fin.toℕ j) ⟧ (:+0 ∷ ρ))
+               ∷ VecEq.refl refl
+
+  forward : ⟦ :∃ f ⟧ ρ → ∃ (λ j → ⟦ proj₁ (Unf-qelim-l₁ φ j) ⟧ ρ)
+                       ⊎ ⟦ :∃ proj₁ (var0⟶-∞ φ) ⟧ ρ
+  forward pr with FProp.any? (λ j → NNF? (Lin-NNF (proj₂ (Unf-qelim-l₁ φ j))) ρ)
+  ... | yes p = inj₁ p
+  ... | no ¬p = inj₂ (cooper₁-simpl φ (proj₂ divφ) ρ aux (proj₁ pr) (proj₂ pr)) where
+
+      aux = uncurry λ j pr → ¬p $′ (j ,_) $′ proj₂ (equiv j) pr
+      divφ = lcm-:∣′ (proj₂ $ var0⟶-∞ φ)
+
+  backward : ∃ (λ j → ⟦ proj₁ (Unf-qelim-l₁ φ j) ⟧ ρ)
+           ⊎ ⟦ :∃ proj₁ (var0⟶-∞ φ) ⟧ ρ → ⟦ :∃ f ⟧ ρ
+  backward = [ (uncurry λ j pr → -, proj₂ (proj₂ (LMem.find (proj₁ (equiv j) pr))))
+             , ⟦var0⟶-∞ φ ⟧ ρ ∘ proj₂ ]′ where
 
 ⟦Unf-qelim-l_⟧ : ∀ {n f} (φ : Unit {ℕ.suc n} f) →
                  :∃ f ⇔ (proj₁ (Unf-qelim-l φ) :∨ (:∃ proj₁ (var0⟶-∞ φ)))
-⟦Unf-qelim-l φ ⟧ ρ = {!!}
-
+⟦Unf-qelim-l φ ⟧ ρ =
+  Sum.map₁ (proj₂ (⟦⋁[k< _ ] Unf-qelim-l₁ φ ⟧ ρ)) ∘′ proj₁ (⟦Unf-qelim-l₁ φ ⟧ ρ)
+  , [ proj₂ (⟦Unf-qelim-l₁ φ ⟧ ρ) ∘′ inj₁ ∘′ proj₁ (⟦⋁[k< _ ] Unf-qelim-l₁ φ ⟧ ρ)
+    , proj₂ (⟦Unf-qelim-l₁ φ ⟧ ρ) ∘′ inj₂ ]′
 
 ⟦Unf-qelim_⟧ : ∀ {n f} (φ : Unit {ℕ.suc n} f) → :∃ f ⇔ proj₁ (Unf-qelim φ)
 ⟦Unf-qelim φ ⟧ ρ =
@@ -32,31 +117,3 @@ open import Function
       (p₂ , q₂) = ⟦Unf-qelim-l φ ⟧ ρ
   in Sum.map₂ p₁ ∘′ p₂
    , [ q₂ ∘′ inj₁ , q₂ ∘′ inj₂ ∘′ q₁ ]′
-
-{-
-
-
-abstract
-
-  private
-    pre-Unf-cooper-l : ∀ {n} (φ : Unf (ℕs n)) (ρ : V.Vec ℤ n) → P.∃ (λ x → [| proj₁ φ |] (V._∷_ x ρ)) →
-         (P.∃ (λ j → [| proj₁ (UC.Unf-qelim-l₁ φ j) |] ρ) ⊎ P.∃ (λ u → [| proj₁ (M.minusinf φ) |] (V._∷_ u ρ)))
-    pre-Unf-cooper-l φ ρ H with D.Fin-dec {BS.jset φ} (λ j → D.Nnf-dec ((proj₁ (Finite-disjunction′ (proj₁ φ , isunitary-islin (proj₂ φ)) (BS.bjset φ j))) , (islin-isnnf (proj₂ (Finite-disjunction′ (proj₁ φ , isunitary-islin (proj₂ φ)) (BS.bjset φ j))))) ρ)
-    ... | yes P = inj₁ P
-    ... | no ¬P = inj₂ (cooper₁-simpl φ ρ (λ h → ¬P (P._,_ (P.proj₁ h) (P.proj₂ (Finite-disjunction′-sem (proj₁ φ , isunitary-islin (proj₂ φ)) (BS.bjset φ (P.proj₁ h)) ρ) (P.proj₁ (Lt.b∈-Lmap-compat (λ b → [| proj₁ φ |] (V._∷_ ([| proj₁ b |]e (V._∷_ (+ 0) ρ)) ρ)) (λ u → Lin.lin-plus u (val (+ toℕ (P.proj₁ h)) , val-islinn-i)) (BS.bset φ)) (P._,_ (P.proj₁ (P.proj₂ h)) (P._,_ (P.proj₁ (P.proj₂ (P.proj₂ h))) (subst (λ u → [| proj₁ φ |] (V._∷_ u ρ)) (Linp.lin-plus-sem (P.proj₁ (P.proj₂ h)) (val (+ toℕ (P.proj₁ h)) , val-islinn-i) (V._∷_ (+ 0) ρ)) (P.proj₂ (P.proj₂ (P.proj₂ h)))))))))) (P.proj₁ H) (P.proj₂ H))
-
-    pre-Unf-cooper-r : ∀ {n} (φ : Unf (ℕs n)) (ρ : V.Vec ℤ n) → P.∃ (λ x → [| proj₁ φ |] (V._∷_ x ρ)) ← (P.∃ (λ j → [| proj₁ (UC.Unf-qelim-l₁ φ j) |] ρ) ⊎ P.∃ (λ u → [| proj₁ (M.minusinf φ) |] (V._∷_ u ρ)))
-    pre-Unf-cooper-r φ ρ with (λ (j : Fin (BS.jset φ)) → Finite-disjunction′-sem (proj₁ φ , isunitary-islin (proj₂ φ)) (BS.bjset φ j) ρ)
-    ... | λPQ = [ (λ J → P._,_ _ (P.proj₂ (P.proj₂ (P.proj₁ (λPQ (P.proj₁ J)) (P.proj₂ J))))) , (λ h → M.cooper₂-simpl φ ρ (P.proj₁ h) (P.proj₂ h)) ]′
-
-    pre-Unf-cooper : ∀ {n} (φ : Unf (ℕs n)) (ρ : V.Vec ℤ n) →
-                   P.∃ (λ x → [| proj₁ φ |] (V._∷_ x ρ)) ↔ (P.∃ (λ (j : Fin (BS.jset φ)) → [| proj₁ (UC.Unf-qelim-l₁ φ j) |] ρ) ⊎ P.∃ (λ u → [| proj₁ (M.minusinf φ) |] (V._∷_ u ρ)))
-    pre-Unf-cooper φ ρ = P._,_ (pre-Unf-cooper-l φ ρ) (pre-Unf-cooper-r φ ρ)
-
-
-    pre-Unf-cooper₂ : ∀ {n} (φ : Unf (ℕs n)) → ex (proj₁ φ) ⇔ (proj₁ (UC.Unf-qelim-l φ)) or (ex (proj₁ (M.minusinf φ)))
-    pre-Unf-cooper₂ φ ρ = P._,_ (λ h → [ (λ hyp → inj₁ (P.proj₂ (Fin-dij-sem (UC.Unf-qelim-l₁ φ) (V.allFin (BS.jset φ)) ρ) (P._,_ (P.proj₁ hyp) (subst (λ u → [| proj₁ (Finite-disjunction′ (proj₁ φ , isunitary-islin (proj₂ φ)) (BS.bjset φ u)) |] ρ) (sym (F.allFin-inv (P.proj₁ hyp))) (P.proj₂ hyp))))) , inj₂ ]′ (P.proj₁ (pre-Unf-cooper φ ρ) h)) [ (λ h → P.proj₂ (pre-Unf-cooper φ ρ) (inj₁ (P._,_ (P.proj₁ (P.proj₁ (Fin-dij-sem (UC.Unf-qelim-l₁ φ) (V.allFin (BS.jset φ)) ρ) h)) (subst (λ u → [| proj₁ (UC.Unf-qelim-l₁ φ u) |] ρ) (F.allFin-inv (P.proj₁ (P.proj₁ (Fin-dij-sem (UC.Unf-qelim-l₁ φ) (V.allFin (BS.jset φ)) ρ) h))) (P.proj₂ (P.proj₁ (Fin-dij-sem (UC.Unf-qelim-l₁ φ) (V.allFin (BS.jset φ)) ρ) h)))))) , (λ h → P.proj₂ (pre-Unf-cooper φ ρ) (inj₂ h)) ]′
-
-  Unf-cooper : ∀ {n} (φ : Unf (ℕs n)) → ex (proj₁ φ) ⇔ proj₁ (UC.Unf-qelim φ)
-  Unf-cooper φ ρ with UC.Unf-qelim-l φ | UC.Unf-qelim-r φ | Af0-Fin-reduc (M.minusinf φ) (lcm-dvd (M.minusinf φ)) ρ | pre-Unf-cooper₂ φ ρ
-  ... | ψ₁ , H₁ | ψ₂ , H₂ | P._,_ P₁ Q₁ | P._,_ P₂ Q₂  = P._,_ (λ h → [ inj₁ , (λ x → inj₂ (P₁ x)) ]′ (P₂ h)) [ (λ x → Q₂ (inj₁ x)) , (λ x → Q₂ (inj₂ (Q₁ x))) ]′
