@@ -13,9 +13,9 @@ open import Function
 
 open import Data.Vec.Properties
 open import Data.Vec.Any as Any using (Any; here; there)
-open import Data.Vec.Any.Properties
+open import Data.Vec.Any.Properties as AnyProp
 open import Data.Vec.Membership.Propositional as Mem using (_∈_)
-open import Data.Vec.Membership.Propositional.Properties
+import Data.Vec.Membership.Propositional.Properties as LMem
 
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
@@ -95,41 +95,30 @@ toSum : ∀ {a} {A : Set a} {p} {P : A → Set p} {x m} {xs : Vec A m} →
 toSum (here px) = inj₁ px
 toSum (there p) = inj₂ p
 
-⟦⋁_⟧ : ∀ {m n} (φs : Vec (∃ (Lin {n})) m) →
-       ∀ ρ → ⟦ proj₁ (⋁ φs) ⟧ ρ ↔ (∃ λ φ → φ ∈ φs × ⟦ proj₁ φ ⟧ ρ)
+⟦⋁_⟧ : ∀ {m n} (φs : Vec (∃ (Lin {n})) m) → ∀ ρ →
+       ⟦ proj₁ (⋁ φs) ⟧ ρ ↔ Any (λ φ → ⟦ proj₁ φ ⟧ ρ) φs
 ⟦⋁ []     ⟧ ρ = ⊥-elim , λ ()
-⟦⋁ φ ∷ φs ⟧ ρ = let ih = ⟦⋁ φs ⟧ ρ in
-  [ (λ p → -, here refl , p) , (Prod.map₂ (Prod.map₁ there) ∘′ (proj₁ ih)) ]′
-  , λ where (φ , φ∈φ∷φs , p) → [ (λ where refl → inj₁ p)
-                               , (λ φ∈φs → inj₂ (proj₂ ih (-, φ∈φs , p)))
-                               ]′ (toSum φ∈φ∷φs)
+⟦⋁ φ ∷ φs ⟧ ρ = [ here , there ∘′ proj₁ ih ]′ , Sum.map₂ (proj₂ ih) ∘′ toSum
+  where ih = ⟦⋁ φs ⟧ ρ
 
-
-⟦⋁[k<_]_⟧ : ∀ {n f} (σ : ℕ) (φ : Lin {ℕ.suc n} f) →
-            ∀ ρ → ⟦ proj₁ (⋁[k< σ ] φ) ⟧ ρ ↔ (∃ λ (k : Fin σ) → ⟦ f ⟧ (ℤ.+ (Fin.toℕ k) ∷ ρ))
+⟦⋁[k<_]_⟧ : ∀ {n} (σ : ℕ) (φ : Fin σ → ∃ (Lin {n})) →
+            ∀ ρ → ⟦ proj₁ (⋁[k< σ ] φ) ⟧ ρ ↔ (∃ λ (k : Fin σ) → ⟦ proj₁ (φ k) ⟧ ρ)
 ⟦⋁[k< σ ] φ ⟧ ρ = begin⟨ ↔-setoid ⟩
-  let f   = toForm Lin φ
-      toℤ = λ k → ℤ.pos (Fin.toℕ k)
-      φs  = Vec.map (λ k → ⟨ val (toℤ k) /0⟩ φ) (Vec.allFin σ) in
-  ⟦ proj₁ (⋁[k< σ ] φ) ⟧ ρ
-    ↔⟨ ⟦⋁ φs ⟧ ρ ⟩
-  ∃ (λ φ → φ ∈ φs × (⟦ proj₁ φ ⟧ ρ))
-    ↔⟨ (λ where (ψ , ψ∈ψs , prf) →
-                 let k = Any.index ψ∈ψs
-                     module Eq = ≡-Reasoning
-                     eq : ψ ≡ ⟨ val (toℤ (k)) /0⟩ φ
-                     eq = Eq.begin
-                       ψ
-                         Eq.≡⟨ lookup-index ψ∈ψs ⟩
-                       Vec.lookup (k) (Vec.map _ _)
-                         Eq.≡⟨ lookup-map k _ (Vec.allFin σ) ⟩
-                       ⟨ val (toℤ (Vec.lookup k (Vec.allFin σ))) /0⟩ φ
-                         Eq.≡⟨ cong (λ p → ⟨ val (toℤ p) /0⟩ φ) (lookup-allFin k) ⟩
-                       ⟨ val (toℤ k) /0⟩ φ
-                         Eq.∎
-                 in k , subst (⟦_⟧ ρ ∘′ proj₁) eq prf)
-     , (λ where (k , prf) → (⟨ val (toℤ k) /0⟩ φ) , ∈-map⁺ _ (∈-allFin⁺ k) , prf) ⟩
-  ∃ (λ (k : Fin σ) → ⟦ proj₁ (⟨ val {n₀ = 1} (toℤ k) /0⟩ φ) ⟧ ρ)
-    ↔⟨ Prod.map₂ (proj₂ (⟦⟨ val (toℤ _) /0⟩ φ ⟧ ρ))
-     , Prod.map₂ (proj₁ (⟦⟨ val (toℤ _) /0⟩ φ ⟧ ρ)) ⟩
-  ∃ (λ k → ⟦ f ⟧ (toℤ k ∷ ρ))          ∎ where open ≋-Reasoning
+  let φs = Vec.map φ (Vec.allFin σ) in
+  ⟦ proj₁ (⋁[k< σ ] φ) ⟧ ρ                       ↔⟨ ⟦⋁ φs ⟧ ρ ⟩
+  Any (⟦_⟧ ρ ∘ proj₁) (Vec.map φ (Vec.allFin σ)) ↔⟨ AnyProp.map⁻ , AnyProp.map⁺ ⟩
+  Any (⟦_⟧ ρ ∘ proj₁ ∘ φ) (Vec.allFin σ)         ↔⟨ Prod.map₂ proj₂ ∘′ LMem.fromAny
+                                                  , LMem.toAny (LMem.∈-allFin⁺ _) ∘ proj₂ ⟩
+  ∃ (λ k → ⟦ proj₁ (φ k) ⟧ ρ) ∎ where open ≋-Reasoning
+
+⟦⋁[k<_]⟨k/0⟩_⟧ : ∀ {n f} (σ : ℕ) (φ : Lin {ℕ.suc n} f) ρ →
+                 ⟦ proj₁ (⋁[k< σ ]⟨k/0⟩ φ) ⟧ ρ
+               ↔ (∃ λ (k : Fin σ) → ⟦ f ⟧ (ℤ.+ (Fin.toℕ k) ∷ ρ))
+⟦⋁[k<_]⟨k/0⟩_⟧ {n} σ φ ρ =  begin⟨ ↔-setoid ⟩
+  let f = toForm Lin φ in
+  ⟦ proj₁ (⋁[k< σ ]⟨k/0⟩ φ) ⟧ ρ
+    ↔⟨ ⟦⋁[k< σ ] (λ k → ⟨ val (ℤ.pos (Fin.toℕ k)) /0⟩ φ) ⟧ ρ ⟩
+  ∃ (λ k → ⟦ proj₁ (⟨ val (ℤ.pos (Fin.toℕ k)) /0⟩ φ) ⟧ ρ)
+    ↔⟨ Prod.map₂ (proj₂ (⟦⟨ val _ /0⟩ φ ⟧ ρ))
+     , Prod.map₂ (proj₁ (⟦⟨ val _ /0⟩ φ ⟧ ρ)) ⟩
+  ∃ (λ k → ⟦ f ⟧ (ℤ.+ Fin.toℕ k ∷ ρ)) ∎ where open ≋-Reasoning

@@ -42,7 +42,7 @@ open import Relation.Nullary.Negation
 open import Relation.Binary.PropositionalEquality
 
 step-cooper₁ :
-  ∀ {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣′ σ f) x ρ →
+  ∀ {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣′ σ (proj₁ $ var0⟶-∞ φ)) x ρ →
   (¬H : ¬ (∃ λ (j : Fin (ℕ.suc ℤ.∣ proj₁ σ ∣)) →
              Any (λ b → x ≡ ⟦ proj₁ b ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j) (bset φ))) →
   ⟦ f ⟧ (x ∷ ρ) → ⟦ f ⟧ (x ℤ.- ℤ.+ ℤ.∣ proj₁ σ ∣ ∷ ρ)
@@ -319,7 +319,7 @@ cooper₁-dec : ∀ {m} n (L : List (∃ (Lin-E {m} 1))) →
   ∀ ρ x → Dec (∃ λ (j : Fin n) → Any (λ b → x ≡ ⟦ proj₁ b ⟧e ρ ℤ.+ ℤ.+ Fin.toℕ j) L)
 cooper₁-dec n L ρ x = FProp.any? $′ λ j → Any.any (λ b → x ℤ.≟ _) L
 
-cooper₁ : ∀ {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣′ σ f) → ∀ ρ →
+cooper₁ : ∀ {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣′ σ (proj₁ $ var0⟶-∞ φ)) → ∀ ρ →
           let ∣σ∣ = ℤ.∣ proj₁ σ ∣ in
           (¬H : ¬ (∃ λ (j : Fin (ℕ.suc ∣σ∣)) →
                 Any (λ b → ⟦ f ⟧ (⟦ proj₁ b ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j ∷ ρ)) (bset φ)))
@@ -330,7 +330,7 @@ cooper₁ {f = f} {σ} φ divφ ρ ¬H x pr
 ... | no ¬p = step-cooper₁ φ divφ x ρ ¬p pr
 
 
-cooper₁s : ∀ (k : ℕ) {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣′ σ f) → ∀ ρ →
+cooper₁s : ∀ (k : ℕ) {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣′ σ (proj₁ $ var0⟶-∞ φ)) → ∀ ρ →
           let ∣σ∣ = ℤ.∣ proj₁ σ ∣ in
           (¬H : ¬ (∃ λ (j : Fin (ℕ.suc ∣σ∣)) →
                 Any (λ b → ⟦ f ⟧ (⟦ proj₁ b ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j ∷ ρ)) (bset φ)))
@@ -355,7 +355,7 @@ cooper₁s (ℕ.suc k) {f = f} {σ} φ divφ ρ ¬H x pr = subst (λ x → ⟦ f
       ∎ where open ≡-Reasoning
 
 
-cooper₁-simpl : ∀ {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣′ σ f) → ∀ ρ →
+cooper₁-simpl : ∀ {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣′ σ (proj₁ $ var0⟶-∞ φ)) → ∀ ρ →
           let ∣σ∣ = ℤ.∣ proj₁ σ ∣ in
           (¬H : ¬ (∃ λ (j : Fin (ℕ.suc ∣σ∣)) →
                 Any (λ b → ⟦ f ⟧ (⟦ proj₁ b ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j ∷ ρ)) (bset φ)))

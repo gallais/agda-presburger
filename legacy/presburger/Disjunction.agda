@@ -50,7 +50,10 @@ unit-E⁻ e = unit-E (proj₂ (div-E (proj₂ (lin-E⁻ e))))
 ⟨ f /0⟩ (φ :∧ ψ) = -, proj₂ (⟨ f /0⟩ φ) :∧ proj₂ (⟨ f /0⟩ ψ)
 ⟨ f /0⟩ (φ :∨ ψ) = -, proj₂ (⟨ f /0⟩ φ) :∨ proj₂ (⟨ f /0⟩ ψ)
 
-⋁[k<_]_ : ∀ {n φ} → ℕ → Lin {ℕ.suc n} φ → ∃ (Lin {n})
+⋁[k<_]_ : ∀ {n} (bd : ℕ) → (Fin bd → ∃ (Lin {n})) → ∃ (Lin {n})
 ⋁[k< σ ] φ = ⋁_
-           $ Vec.map (λ k → ⟨ (val {n₀ = 1} (ℤ.+ Fin.toℕ k)) /0⟩ φ)
+           $ Vec.map φ
            $ Vec.allFin σ
+
+⋁[k<_]⟨k/0⟩_ : ∀ {n f} → ℕ → Lin {ℕ.suc n} f → ∃ (Lin {n})
+⋁[k< σ ]⟨k/0⟩ f = ⋁[k< σ ] λ k → ⟨ (val {n₀ = 1} (ℤ.+ Fin.toℕ k)) /0⟩ f

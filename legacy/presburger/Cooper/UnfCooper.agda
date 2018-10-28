@@ -25,10 +25,10 @@ Unf-qelim-l₁ : ∀ {n f} (φ : Unit {ℕ.suc n} f) (j : Fin (jset φ)) → ∃
 Unf-qelim-l₁ φ j = ⋁ Vec.fromList (List.map (λ e → ⟨ proj₂ e /0⟩ Unit-Lin φ) (bjset φ j))
 
 Unf-qelim-l : ∀ {n f} → Unit {ℕ.suc n} f → ∃ (Lin {n})
-Unf-qelim-l φ = ⋁ Vec.map (Unf-qelim-l₁ φ) (Vec.allFin (jset φ))
+Unf-qelim-l φ = ⋁[k< jset φ ] Unf-qelim-l₁ φ
 
 Unf-qelim-r : ∀ {n f} → Unit {ℕ.suc n} f → ∃ (Lin {n})
-Unf-qelim-r φ = ⋁[k< ℕ.pred (jset φ) ] (Free0-Lin (proj₂ (var0⟶-∞ φ)))
+Unf-qelim-r φ = ⋁[k< ℕ.pred (jset φ) ]⟨k/0⟩ (Free0-Lin (proj₂ (var0⟶-∞ φ)))
 
 Unf-qelim : ∀ {n f} → Unit {ℕ.suc n} f → ∃ (Lin {n})
 Unf-qelim φ = -, proj₂ (Unf-qelim-l φ) :∨ proj₂ (Unf-qelim-r φ)
