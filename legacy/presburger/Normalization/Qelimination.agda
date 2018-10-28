@@ -3,16 +3,14 @@ module Normalization.Qelimination where
 open import Representation
 open import Properties
 open import Properties-prop
+open import Cooper.QfreeCooper
+
 open import Data.Product
 
 -- Datatypes
 open import Data.Nat as ℕ using (ℕ)
 open import Data.Integer as ℤ using (ℤ)
 open import Data.Fin as Fin using (Fin)
-
-
-postulate
-  qelim : ∀ {n φ} → QFree {ℕ.suc n} φ → ∃ (QFree {n})
 
 infix 3 ¬_
 ¬_ : ∀ {n φ} → QFree {n} φ → ∃ (QFree {n})
