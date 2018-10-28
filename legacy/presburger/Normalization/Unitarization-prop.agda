@@ -36,7 +36,7 @@ open import Relation.Binary.PropositionalEquality
   ℤ.pos 1 ℤ.* (⟦t⟧e (x ∷ ρ)) ≡⟨ ZProp.*-identityˡ (⟦t⟧e (x ∷ ρ)) ⟩
   ⟦t⟧e (x ∷ ρ)               ≡⟨ lin-ext₁ e x (toℤ σ ℤ.* x) ρ ⟩
   ⟦t⟧e (toℤ σ ℤ.* x ∷ ρ)     ∎ where open ≡-Reasoning
-⟦unit-E_⟧ {_ , σ} (k [ k∣σ ]*var0+ e) ρ {x} = begin
+⟦unit-E_⟧ {_ , σ} (k [ k∣′σ ]*var0+ e) ρ {x} = begin
   k′ ℤ.* (k ℤ.* x ℤ.+ ⟦t⟧e ρ₁)
     ≡⟨ ZProp.*-distribˡ-+ k′ _ _ ⟩
   k′ ℤ.* (k ℤ.* x) ℤ.+ k′ ℤ.* ⟦t⟧e ρ₁
@@ -56,8 +56,9 @@ open import Relation.Binary.PropositionalEquality
     ρ₂   = toℤ σ ℤ.* x ∷ ρ
 
     -- coefficient
-    k′ = ℤ.+ Ndiv.quotient k∣σ
-    s  = ℤ.sign k S.* ℤ.sign (toℤ σ)
+    k∣σ = ZdivProp.∣′m⇒∣m k∣′σ
+    k′  = ℤ.+ Ndiv.quotient k∣σ
+    s   = ℤ.sign k S.* ℤ.sign (toℤ σ)
 
     ∣eq∣ : ℤ.∣ k′ ℤ.* k ∣ ≡ ℤ.∣ (s ℤ.◃ 1) ℤ.* toℤ σ ∣
     ∣eq∣ = begin
@@ -95,7 +96,6 @@ open import Relation.Binary.PropositionalEquality
         open ≡-Reasoning
         sgn = ℤ.sign (s ℤ.◃ 1) S.* ℤ.sign (toℤ σ)
         abs = ℕ.suc q ℕ.* ℕ.suc ∣k∣
-
     eq : k′ ℤ.* k ≡ (s ℤ.◃ 1) ℤ.* toℤ σ
     eq = ZProp.◃-≡ sign-eq ∣eq∣
 
@@ -138,19 +138,19 @@ open import Relation.Binary.SetoidReasoning
   ⟦ proj₁ (unit (e :≢0)) ⟧ _ ∎
 ⟦unit_⟧ {σ} (k≠0 :| e) ρ {x} = begin⟨ ↔-setoid ⟩
   let k = toℤ k≠0; t = toExp (Div-E σ) e; k' = unit-k e; k'k = ℤ.+ k' ℤ.* k in
-  k Zdiv.∣ (⟦ t ⟧e (x ∷ ρ))
-    ≈⟨ ZdivProp.*-monoʳ-∣ (ℤ.+ k')
-     , ZdivProp.*-cancelˡ-∣ (ℤ.+ k') (to≢0 (unit-k≠0 e)) ⟩
-  k'k Zdiv.∣ ℤ.pos k' ℤ.* (⟦ t ⟧e (x ∷ ρ))
-    ≡⟨ cong (k'k Zdiv.∣_) (⟦unit-E e ⟧ ρ) ⟩
+  k Zdiv.∣′ (⟦ t ⟧e (x ∷ ρ))
+    ≈⟨ ZdivProp.*-monoʳ-∣′ (ℤ.+ k')
+     , ZdivProp.*-cancelˡ-∣′ (ℤ.+ k') (to≢0 (unit-k≠0 e)) ⟩
+  k'k Zdiv.∣′ ℤ.pos k' ℤ.* (⟦ t ⟧e (x ∷ ρ))
+    ≡⟨ cong (k'k Zdiv.∣′_) (⟦unit-E e ⟧ ρ) ⟩
   ⟦ proj₁ (unit (k≠0 :| e)) ⟧ (toℤ (proj₂ σ) ℤ.* x ∷ ρ) ∎
 ⟦unit_⟧ {σ} (k≠0 :|̸ e) ρ {x} = begin⟨ ↔-setoid ⟩
   let k = toℤ k≠0; t = toExp (Div-E σ) e; k' = unit-k e; k'k = ℤ.+ k' ℤ.* k in
-  ¬ (k Zdiv.∣ (⟦ t ⟧e (x ∷ ρ)))
-    ≈⟨ ↔¬ (ZdivProp.*-monoʳ-∣ (ℤ.+ k')
-          , ZdivProp.*-cancelˡ-∣ (ℤ.+ k') (to≢0 (unit-k≠0 e))) ⟩
-  ¬ (k'k Zdiv.∣ ℤ.pos k' ℤ.* (⟦ t ⟧e (x ∷ ρ)))
-    ≡⟨ cong (λ p → ¬ k'k Zdiv.∣ p) (⟦unit-E e ⟧ ρ) ⟩
+  ¬ (k Zdiv.∣′ (⟦ t ⟧e (x ∷ ρ)))
+    ≈⟨ ↔¬ (ZdivProp.*-monoʳ-∣′ (ℤ.+ k')
+          , ZdivProp.*-cancelˡ-∣′ (ℤ.+ k') (to≢0 (unit-k≠0 e))) ⟩
+  ¬ (k'k Zdiv.∣′ ℤ.pos k' ℤ.* (⟦ t ⟧e (x ∷ ρ)))
+    ≡⟨ cong (λ p → ¬ k'k Zdiv.∣′ p) (⟦unit-E e ⟧ ρ) ⟩
   (¬ ⟦ proj₁ (unit (k≠0 :| e)) ⟧ (toℤ (proj₂ σ) ℤ.* x ∷ ρ)) ∎
 ⟦unit p :∧ q ⟧ ρ = ⟦unit p ⟧ ρ ↔× ⟦unit q ⟧ ρ
 ⟦unit p :∨ q ⟧ ρ = ⟦unit p ⟧ ρ ↔⊎ ⟦unit q ⟧ ρ
