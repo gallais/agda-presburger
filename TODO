@@ -1,9 +1,0 @@
-Temporary solutions
-=================
-
-problem.semantics-prop uses [renaming (suc to Fs)] just
-because of bug #675. This should be removed as soon as
-the bug fix is available.
-
-http://code.google.com/p/agda/issues/detail?id=675
-
