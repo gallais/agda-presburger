@@ -1,19 +1,17 @@
 module Cooper.LinCooper where
 
 open import Representation
-import Properties as Pr
-import Normalization.Unitarization as Uni
-import Cooper.UnfCooper as UC
+open import Properties
+open import Normalization.LCMReduction
+open import Normalization.Unitarization
+open import Cooper.UnfCooper
 
-open import Data.Nat as Nat
-open import Data.Integer using (+_)
+open import Data.Nat as ℕ using (ℕ)
+open import Data.Integer as ℤ using (ℤ)
 open import Data.Fin renaming (suc to Fs ; _≤_ to _F≤_)
 
-open import Product
-import Data.Product as P using (_,_)
+open import Data.Product as Prod
 
-open import Relation.Binary.PropositionalEquality using (refl)
-
-Lin-qelim : ∀ {n} (φ : Pr.Lin (Nat.suc n)) → Pr.Lin n
-Lin-qelim φ with Uni.lcmφ φ | Uni.unitarise φ
-... | P._,_ (l , neq) Hl | ψ , Hψ = UC.Unf-qelim (((l dvd (((+ 1) :* var zero) :+ val (+ 0))) and ψ) , Pr.and-isunitary (Pr.dvd-isunitary neq (Pr.var0-isunit refl Pr.val-islinn-i)) Hψ)
+Lin-qelim : ∀ {n f} (φ : Lin {ℕ.suc n} f) → ∃ (Lin {n})
+Lin-qelim φ = let ((σ , σ≠0) , divφ) = div φ in
+              Unf-qelim (σ≠0 :| :+1 [ ∣+1∣ ]*var0+ val (ℤ.+ 0) :∧ proj₂ (unit divφ))

@@ -7,15 +7,18 @@ open import Data.Fin as Fin using (Fin)
 open import Relation.Binary.PropositionalEquality
 
 open import Data.Vec
-open import Data.Vec.Relation.Pointwise.Inductive using (Pointwise; Pointwise-≡⇒≡)
+import Data.Vec.Relation.Pointwise.Inductive as VecEq
 open import Function
 
 open import Representation
 open import Properties
 open import Semantics
 
-⟦_⟧-ext : ∀ {n} (f : form n) {ρ₁ ρ₂} → Pointwise _≡_ ρ₁ ρ₂ → ⟦ f ⟧ ρ₁ → ⟦ f ⟧ ρ₂
-⟦ f ⟧-ext ρ rewrite Pointwise-≡⇒≡ ρ = id
+⟦_⟧-ext : ∀ {n} (f : form n) {ρ₁ ρ₂} → VecEq.Pointwise _≡_ ρ₁ ρ₂ → ⟦ f ⟧ ρ₁ → ⟦ f ⟧ ρ₂
+⟦ f ⟧-ext ρ rewrite VecEq.Pointwise-≡⇒≡ ρ = id
+
+⟦_⟧-ext₁ : ∀ {n} (f : form (ℕ.suc n)) {x y ρ} → x ≡ y → ⟦ f ⟧ (x ∷ ρ) → ⟦ f ⟧ (y ∷ ρ)
+⟦ f ⟧-ext₁ x = ⟦ f ⟧-ext (x VecEq.∷ VecEq.refl refl)
 
 lin-ext₁ : ∀ {n n₀ t} (e : Lin-E {ℕ.suc n} (ℕ.suc n₀) t) x₁ x₂ ρ →
            ⟦ t ⟧e (x₁ ∷ ρ) ≡ ⟦ t ⟧e (x₂ ∷ ρ)

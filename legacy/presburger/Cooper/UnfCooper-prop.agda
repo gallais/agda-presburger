@@ -77,16 +77,14 @@ import Relation.Binary.SetoidReasoning as SR
       ≈⟨ LAny.map (proj₂ (⟦⟨ _ /0⟩ Unit-Lin φ ⟧ ρ))
        , LAny.map (proj₁ (⟦⟨ _ /0⟩ Unit-Lin φ ⟧ ρ)) ⟩
     Any (λ z → ⟦ f ⟧ ((⟦ (z +Fin j) .proj₁ ⟧e (:+0 ∷ ρ)) ∷ ρ)) (bset φ)
-      ≈⟨ LAny.map (λ {b} → ⟦ f ⟧-ext (VecEq.sym sym $ env-eq b))
-       , LAny.map (λ {b} → ⟦ f ⟧-ext (env-eq b)) ⟩
+      ≈⟨ LAny.map (λ {b} → ⟦ f ⟧-ext₁ (sym $ val-eq b))
+       , LAny.map (λ {b} → ⟦ f ⟧-ext₁ (val-eq b)) ⟩
     Any (λ b → ⟦ f ⟧ (⟦ b ⟧+Fin j ∷ ρ)) (bset φ) ∎ where
 
       open SR
 
-      env-eq : ∀ t → VecEq.Pointwise _≡_ (⟦ t ⟧+Fin j                     ∷ ρ)
-                                         (⟦ proj₁ (t +Fin j) ⟧e (:+0 ∷ ρ) ∷ ρ)
-      env-eq t = (⟦ proj₂ t ⟧+E⟦ val (ℤ.+ Fin.toℕ j) ⟧ (:+0 ∷ ρ))
-               ∷ VecEq.refl refl
+      val-eq : ∀ t → ⟦ t ⟧+Fin j ≡ ⟦ proj₁ (t +Fin j) ⟧e (:+0 ∷ ρ)
+      val-eq t = ⟦ proj₂ t ⟧+E⟦ val (ℤ.+ Fin.toℕ j) ⟧ (:+0 ∷ ρ)
 
   forward : ⟦ :∃ f ⟧ ρ → ∃ (λ j → ⟦ proj₁ (Unf-qelim-l₁ φ j) ⟧ ρ)
                        ⊎ ⟦ :∃ proj₁ (var0⟶-∞ φ) ⟧ ρ
