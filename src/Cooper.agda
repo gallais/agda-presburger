@@ -23,7 +23,7 @@ import Data.Nat.Properties as NProp
 
 open import Data.Integer as ℤ using (ℤ)
 import Data.Integer.Properties as ZProp
-import Data.Integer.Divisibility.Properties as ZdivProp
+open import Data.Integer.Divisibility.Signed
 import Data.Integer.DivMod as ZDM
 import Algebra.Properties.Ring ZProp.+-*-ring as APR
 
@@ -42,7 +42,7 @@ open import Relation.Nullary.Negation
 open import Relation.Binary.PropositionalEquality
 
 step-cooper₁ :
-  ∀ {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣′ σ (proj₁ $ var0⟶-∞ φ)) x ρ →
+  ∀ {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣ σ (proj₁ $ var0⟶-∞ φ)) x ρ →
   (¬H : ¬ (∃ λ (j : Fin (ℕ.suc ℤ.∣ proj₁ σ ∣)) →
              Any (λ b → x ≡ ⟦ proj₁ b ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j) (bset φ))) →
   ⟦ f ⟧ (x ∷ ρ) → ⟦ f ⟧ (x ℤ.- ℤ.+ ℤ.∣ proj₁ σ ∣ ∷ ρ)
@@ -88,7 +88,7 @@ step-cooper₁ {σ = σ , σ≠0} (:-1 [ ∣-1∣ ]*var0+ e :≤0) divφ x ρ ¬
 
 ... | no ¬le = ⊥-elim $ ¬H (j , here ⋯-x≡0) where
 
-   lt   = ZProp.≰→> ¬le
+   lt   = ZProp.≰⇒> ¬le
    t    = toExp (Lin-E 1) e
    -x   = ℤ.- x
    +∣σ∣ = ℤ.+ ℤ.∣ σ ∣
@@ -272,22 +272,22 @@ step-cooper₁ {σ = σ , σ≠0} (:-1 [ ∣-1∣ ]*var0+ e :≢0) divφ x ρ ¬
                                                (cong ℤ.+_ (sym (FProp.toℕ-fromℕ _))) ⟩
     ⟦t⟧ :+0 ℤ.+ ℤ.+ (Fin.toℕ k) ∎ where open ≡-Reasoning
 
-step-cooper₁ {σ = σ≠0} (k≠0 :| e) (k∣′σ [ _ ]:| t) x ρ ¬H ⟦f⟧ = begin
-  k                                      ∣′⟨ kdivs ⟩
+step-cooper₁ {σ = σ≠0} (k≠0 :| e) (k∣σ [ _ ]:| t) x ρ ¬H ⟦f⟧ = begin
+  k                                      ∣⟨ kdivs ⟩
   ⟦ t ⟧e (:-1 ℤ.* ℤ.+ ℤ.∣ σ ∣ ℤ.+ x ∷ ρ) ≡⟨ ctxt (ZProp.+-comm (:-1 ℤ.* ℤ.pos ℤ.∣ σ ∣) x) ⟩
   ⟦ t ⟧e (x ℤ.+ :-1 ℤ.* ℤ.+ ℤ.∣ σ ∣ ∷ ρ) ≡⟨ ctxt (cong (ℤ._+_ x) (ZProp.-1*n≡-n _)) ⟩
   ⟦ t ⟧e (x-∣σ∣ ∷ ρ) ∎ where
 
-  open ZdivProp.∣′-Reasoning
+  open ∣-Reasoning
   σ      = proj₁ σ≠0
   x-∣σ∣  = x ℤ.- ℤ.+ ℤ.∣ σ ∣
   k      = toℤ k≠0
-  k∣′∣σ∣ = ZdivProp.∣′-trans k∣′σ ZdivProp.m∣′∣m∣
-  kdivs  = proj₁ (⟦ e mod-E ∣ σ≠0 ∣≠0 |: _ [ k∣′∣σ∣ ]⟧ :-1 x ρ) ⟦f⟧
+  k∣∣σ∣ = ∣-trans k∣σ m∣∣m∣
+  kdivs  = proj₁ (⟦ e mod-E ∣ σ≠0 ∣≠0 |: _ [ k∣∣σ∣ ]⟧ :-1 x ρ) ⟦f⟧
   ctxt   = cong (λ x → ⟦ t ⟧e (x ∷ ρ))
 
-step-cooper₁ {σ = σ≠0} (k≠0 :|̸ e) (k∣′σ [ _ ]:|̸ t) x ρ ¬H ¬k∣′ k∣′ = ¬k∣′ $ begin
-  k ∣′⟨ kdivs ⟩
+step-cooper₁ {σ = σ≠0} (k≠0 :|̸ e) (k∣σ [ _ ]:|̸ t) x ρ ¬H ¬k∣ k∣ = ¬k∣ $ begin
+  k ∣⟨ kdivs ⟩
   ⟦ t ⟧e (1*+∣σ∣ ℤ.+ x-∣σ∣ ∷ ρ)        ≡⟨ ctxt (ZProp.+-comm 1*+∣σ∣ x-∣σ∣ ) ⟩
   ⟦ t ⟧e (x-∣σ∣ ℤ.+ 1*+∣σ∣ ∷ ρ)        ≡⟨ ctxt (ZProp.+-assoc x -∣σ∣ 1*+∣σ∣) ⟩
   ⟦ t ⟧e (x ℤ.+ (-∣σ∣ ℤ.+ 1*+∣σ∣) ∷ ρ) ≡⟨ ctxt (ctxt' (ZProp.*-identityˡ +∣σ∣)) ⟩
@@ -295,15 +295,15 @@ step-cooper₁ {σ = σ≠0} (k≠0 :|̸ e) (k∣′σ [ _ ]:|̸ t) x ρ ¬H ¬k
   ⟦ t ⟧e (x ℤ.+ :+0 ∷ ρ)               ≡⟨ ctxt (ZProp.+-identityʳ x) ⟩
   ⟦ t ⟧e (x ∷ ρ) ∎ where
 
-  open ZdivProp.∣′-Reasoning
+  open ∣-Reasoning
   σ      = proj₁ σ≠0
   +∣σ∣   = ℤ.+ ℤ.∣ σ ∣
   -∣σ∣   = ℤ.- +∣σ∣
   1*+∣σ∣ = :+1 ℤ.* +∣σ∣
   x-∣σ∣  = x ℤ.- +∣σ∣
   k      = toℤ k≠0
-  k∣′∣σ∣ = ZdivProp.∣′-trans k∣′σ ZdivProp.m∣′∣m∣
-  kdivs = proj₁ (⟦ e mod-E ∣ σ≠0 ∣≠0 |: _ [ k∣′∣σ∣ ]⟧ :+1 x-∣σ∣ ρ) k∣′
+  k∣∣σ∣ = ∣-trans k∣σ m∣∣m∣
+  kdivs = proj₁ (⟦ e mod-E ∣ σ≠0 ∣≠0 |: _ [ k∣∣σ∣ ]⟧ :+1 x-∣σ∣ ρ) k∣
   ctxt   = cong (λ x → ⟦ t ⟧e (x ∷ ρ))
   ctxt'  = cong (λ t → x ℤ.+ (-∣σ∣ ℤ.+ t))
 
@@ -319,7 +319,7 @@ cooper₁-dec : ∀ {m} n (L : List (∃ (Lin-E {m} 1))) →
   ∀ ρ x → Dec (∃ λ (j : Fin n) → Any (λ b → x ≡ ⟦ proj₁ b ⟧e ρ ℤ.+ ℤ.+ Fin.toℕ j) L)
 cooper₁-dec n L ρ x = FProp.any? $′ λ j → Any.any (λ b → x ℤ.≟ _) L
 
-cooper₁ : ∀ {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣′ σ (proj₁ $ var0⟶-∞ φ)) → ∀ ρ →
+cooper₁ : ∀ {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣ σ (proj₁ $ var0⟶-∞ φ)) → ∀ ρ →
           let ∣σ∣ = ℤ.∣ proj₁ σ ∣ in
           (¬H : ¬ (∃ λ (j : Fin (ℕ.suc ∣σ∣)) →
                 Any (λ b → ⟦ f ⟧ (⟦ proj₁ b ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j ∷ ρ)) (bset φ)))
@@ -330,7 +330,7 @@ cooper₁ {f = f} {σ} φ divφ ρ ¬H x pr
 ... | no ¬p = step-cooper₁ φ divφ x ρ ¬p pr
 
 
-cooper₁s : ∀ (k : ℕ) {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣′ σ (proj₁ $ var0⟶-∞ φ)) → ∀ ρ →
+cooper₁s : ∀ (k : ℕ) {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣ σ (proj₁ $ var0⟶-∞ φ)) → ∀ ρ →
           let ∣σ∣ = ℤ.∣ proj₁ σ ∣ in
           (¬H : ¬ (∃ λ (j : Fin (ℕ.suc ∣σ∣)) →
                 Any (λ b → ⟦ f ⟧ (⟦ proj₁ b ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j ∷ ρ)) (bset φ)))
@@ -346,7 +346,7 @@ cooper₁s (ℕ.suc k) {f = f} {σ} φ divφ ρ ¬H x pr = subst (λ x → ⟦ f
   eq : x ℤ.- ℤ.+ ∣σ∣ ℤ.- ℤ.+ k ℤ.* ℤ.+ ∣σ∣ ≡ x ℤ.- ℤ.+ (ℕ.suc k) ℤ.* ℤ.+ ∣σ∣
   eq = sym $ begin
     x ℤ.- ℤ.+ (ℕ.suc k) ℤ.* ℤ.+ ∣σ∣
-      ≡⟨ cong (ℤ._-_ x) (ZProp.sm*n≡n+m*n (ℤ.+ k) (ℤ.+ ∣σ∣)) ⟩
+      ≡⟨ cong (ℤ._-_ x) (ZProp.[1+m]*n≡n+m*n (ℤ.+ k) (ℤ.+ ∣σ∣)) ⟩
     x ℤ.- (ℤ.+ ∣σ∣ ℤ.+ ℤ.+ k ℤ.* ℤ.+ ∣σ∣)
       ≡⟨ cong (ℤ._+_ x) (ZProp.neg-distrib-+ (ℤ.+ ∣σ∣) (ℤ.+ k ℤ.* ℤ.+ ∣σ∣)) ⟩
     x ℤ.+ (ℤ.- ℤ.+ ∣σ∣ ℤ.+ ℤ.- (ℤ.+ k ℤ.* ℤ.+ ∣σ∣))
@@ -355,7 +355,7 @@ cooper₁s (ℕ.suc k) {f = f} {σ} φ divφ ρ ¬H x pr = subst (λ x → ⟦ f
       ∎ where open ≡-Reasoning
 
 
-cooper₁-simpl : ∀ {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣′ σ (proj₁ $ var0⟶-∞ φ)) → ∀ ρ →
+cooper₁-simpl : ∀ {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣ σ (proj₁ $ var0⟶-∞ φ)) → ∀ ρ →
           let ∣σ∣ = ℤ.∣ proj₁ σ ∣ in
           (¬H : ¬ (∃ λ (j : Fin (ℕ.suc ∣σ∣)) →
                 Any (λ b → ⟦ f ⟧ (⟦ proj₁ b ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j ∷ ρ)) (bset φ)))

@@ -30,4 +30,4 @@ bjset : ∀ {n p φ} → Unit {n} φ → Fin p → List (∃ (Lin-E {n} 1))
 bjset φ j = List.map ((_+E val (ℤ.+ Fin.toℕ j)) ∘ proj₂) (bset φ)
 
 jset : ∀ {n f} → Unit {n} f → ℕ
-jset φ = ℕ.suc ℤ.∣ proj₁ (proj₁ $ lcm-:∣′ (proj₂ $ var0⟶-∞ φ)) ∣
+jset φ = ℕ.suc ℤ.∣ proj₁ (proj₁ $ lcm-:∣ (proj₂ $ var0⟶-∞ φ)) ∣

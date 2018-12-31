@@ -5,7 +5,7 @@ import Data.Nat.LCM as LCM
 import Data.Nat.GCD as GCD
 import Data.Nat.Properties as NProp
 open import Data.Integer as ℤ
-open import Data.Integer.Divisibility
+open import Data.Integer.Divisibility.Signed
 import Data.Integer.Properties as ZProp
 open import Data.Fin as F
 open import Data.Empty
@@ -163,7 +163,7 @@ infixr 21 c*varn_+_ _[_]*var0+_
 data Div-E (σ : Notnull) : {n : ℕ} → exp n → Set where
   val         : ∀ {n} k → Div-E σ {n} (val k)
   c*varn_+_   : ∀ {n} {t : exp n} (p : ℕ) → Lin-E (ℕ.suc p) t → Div-E σ t
-  _[_]*var0+_ : ∀ {n} {t : exp (ℕ.suc n)} k → k ∣′ (proj₁ σ) → Lin-E 1 t →
+  _[_]*var0+_ : ∀ {n} {t : exp (ℕ.suc n)} k → k ∣ (proj₁ σ) → Lin-E 1 t →
                 Div-E σ ((k :* var zero) :+ t)
 
 data Div {n : ℕ} (σ : Notnull) : form n → Set where
@@ -256,13 +256,13 @@ data Free0 {n : ℕ} : form n → Set where
 -- For all k|_, k | σ
 -----
 
-data All∣′ {n : ℕ} (σ : Notnull) : form n → Set where
-  T       : All∣′ σ T
-  F       : All∣′ σ F
-  _:≤0    : ∀ t → All∣′ σ (t :≤ :0)
-  _:≡0    : ∀ t → All∣′ σ (t :≡ :0)
-  _:≢0    : ∀ t → All∣′ σ (:¬ (t :≡ :0))
-  _[_]:|_ : ∀ {k} → k ∣′ (proj₁ σ) → k ≠0 → ∀ t → All∣′ σ (k :| t)
-  _[_]:|̸_ : ∀ {k} → k ∣′ (proj₁ σ) → k ≠0 → ∀ t → All∣′ σ (:¬ (k :| t))
-  _:∧_    : ∀ {φ₁ φ₂} → All∣′ σ φ₁ → All∣′ σ φ₂ → All∣′ σ (φ₁ :∧ φ₂)
-  _:∨_    : ∀ {φ₁ φ₂} → All∣′ σ φ₁ → All∣′ σ φ₂ → All∣′ σ (φ₁ :∨ φ₂)
+data All∣ {n : ℕ} (σ : Notnull) : form n → Set where
+  T       : All∣ σ T
+  F       : All∣ σ F
+  _:≤0    : ∀ t → All∣ σ (t :≤ :0)
+  _:≡0    : ∀ t → All∣ σ (t :≡ :0)
+  _:≢0    : ∀ t → All∣ σ (:¬ (t :≡ :0))
+  _[_]:|_ : ∀ {k} → k ∣ (proj₁ σ) → k ≠0 → ∀ t → All∣ σ (k :| t)
+  _[_]:|̸_ : ∀ {k} → k ∣ (proj₁ σ) → k ≠0 → ∀ t → All∣ σ (:¬ (k :| t))
+  _:∧_    : ∀ {φ₁ φ₂} → All∣ σ φ₁ → All∣ σ φ₂ → All∣ σ (φ₁ :∧ φ₂)
+  _:∨_    : ∀ {φ₁ φ₂} → All∣ σ φ₁ → All∣ σ φ₂ → All∣ σ (φ₁ :∨ φ₂)

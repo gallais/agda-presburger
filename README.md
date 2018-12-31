@@ -12,8 +12,6 @@ This development has been typechecked with Agda version 2.6.0, using
 various extensions of the standard library currently waiting to be
 merged.
 
-* https://github.com/agda/agda-stdlib/pull/484
-* https://github.com/agda/agda-stdlib/pull/491
-* https://github.com/agda/agda-stdlib/pull/504
+* https://github.com/agda/agda-stdlib/pull/571
 
 

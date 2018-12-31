@@ -10,7 +10,7 @@ open import Data.Nat as ℕ using (ℕ)
 import Data.Nat.Divisibility as Ndiv
 open import Data.Integer as ℤ using (ℤ)
 import Data.Integer.Properties as ZProp
-import Data.Integer.Divisibility.Properties as ZdivProp
+open import Data.Integer.Divisibility.Signed
 open import Data.Fin as Fin using (Fin)
 
 open import Data.Product as Prod
@@ -31,19 +31,19 @@ NNF-dec F          ρ = no id
 NNF-dec (t₁ :≤ t₂) ρ = _ ℤ.≤? _
 NNF-dec (t₁ :≡ t₂) ρ = _ ℤ.≟ _
 NNF-dec (t₁ :≢ t₂) ρ = ¬? (_ ℤ.≟ _)
-NNF-dec (k :| t)   ρ = _ ZdivProp.∣′? _
-NNF-dec (k :|̸ t)   ρ = ¬? (_ ZdivProp.∣′? _)
+NNF-dec (k :| t)   ρ = _ ∣? _
+NNF-dec (k :|̸ t)   ρ = ¬? (_ ∣? _)
 NNF-dec (p :∧ q)   ρ = (NNF-dec p ρ) ×-dec (NNF-dec q ρ)
 NNF-dec (p :∨ q)   ρ = (NNF-dec p ρ) ⊎-dec (NNF-dec q ρ)
 
 ⟦¬_⟧ : ∀ {n φ} (p : NNF {n} φ) → :¬ φ ⇔ proj₁ (¬ p)
 ⟦¬ T        ⟧ ρ = (_$ _) , ⊥-elim
 ⟦¬ F        ⟧ ρ = _ , const id
-⟦¬ t₁ :≤ t₂ ⟧ ρ = ZProp.≰→> , ZProp.>→≰
+⟦¬ t₁ :≤ t₂ ⟧ ρ = ZProp.≰⇒> , ZProp.>⇒≰
 ⟦¬ t₁ :≡ t₂ ⟧ ρ = ↔-refl
 ⟦¬ t₁ :≢ t₂ ⟧ ρ = decidable-stable (_ ℤ.≟ _) , _|>′_
 ⟦¬ k :| t   ⟧ ρ = ↔-refl
-⟦¬ k :|̸ t   ⟧ ρ = decidable-stable (_ ZdivProp.∣′? _) , _|>′_
+⟦¬ k :|̸ t   ⟧ ρ = decidable-stable (_ ∣? _) , _|>′_
 ⟦¬ φ :∧ ψ   ⟧ ρ = begin⟨ ↔-setoid ⟩
   let p = toForm NNF φ; q = toForm NNF ψ in
   (⟦ :¬ p :∧ q ⟧ ρ)             ≈⟨ deMorgan-¬× (NNF-dec φ ρ) (NNF-dec ψ ρ) ⟩

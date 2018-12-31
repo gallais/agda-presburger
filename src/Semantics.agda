@@ -10,7 +10,7 @@ open import Data.Empty
 open import Data.Unit
 open import Relation.Binary.PropositionalEquality
 
-open import Data.Integer.Divisibility
+open import Data.Integer.Divisibility.Signed
 
 open import Representation
 
@@ -25,7 +25,7 @@ open import Representation
 ⟦_⟧_ : ∀ {n} → (φ : form n) → (ρ : Vec ℤ n) → Set
 ⟦ T ⟧ ρ = ⊤
 ⟦ F ⟧ ρ = ⊥
-⟦ k :| e ⟧ ρ = k ∣′ ⟦ e ⟧e ρ
+⟦ k :| e ⟧ ρ = k ∣ ⟦ e ⟧e ρ
 ⟦ e₁ :< e₂ ⟧ ρ = ℤ.suc (⟦ e₁ ⟧e ρ) ℤ.≤ ⟦ e₂ ⟧e ρ
 ⟦ e₁ :> e₂ ⟧ ρ = ℤ.suc (⟦ e₂ ⟧e ρ) ℤ.≤ ⟦ e₁ ⟧e ρ
 ⟦ e₁ :≤ e₂ ⟧ ρ = ⟦ e₁ ⟧e ρ ℤ.≤ ⟦ e₂ ⟧e ρ

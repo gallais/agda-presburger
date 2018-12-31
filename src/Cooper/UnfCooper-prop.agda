@@ -93,7 +93,7 @@ import Relation.Binary.SetoidReasoning as SR
   ... | no ¬p = inj₂ (cooper₁-simpl φ (proj₂ divφ) ρ aux (proj₁ pr) (proj₂ pr)) where
 
       aux = uncurry λ j pr → ¬p $′ (j ,_) $′ proj₂ (equiv j) pr
-      divφ = lcm-:∣′ (proj₂ $ var0⟶-∞ φ)
+      divφ = lcm-:∣ (proj₂ $ var0⟶-∞ φ)
 
   backward : ∃ (λ j → ⟦ proj₁ (Unf-qelim-l₁ φ j) ⟧ ρ)
            ⊎ ⟦ :∃ proj₁ (var0⟶-∞ φ) ⟧ ρ → ⟦ :∃ f ⟧ ρ
@@ -112,7 +112,7 @@ abstract
   ⟦Unf-qelim_⟧ : ∀ {n f} (φ : Unit {ℕ.suc n} f) → :∃ f ⇔ proj₁ (Unf-qelim φ)
   ⟦Unf-qelim φ ⟧ ρ =
     let (f^-∞ , φ^-∞) = var0⟶-∞ φ
-        (σ , divφ^-∞) = lcm-:∣′ φ^-∞
+        (σ , divφ^-∞) = lcm-:∣ φ^-∞
         (p₁ , q₁) = ⟦⋁ φ^-∞ when σ :| divφ^-∞ ⟧ ρ
         (p₂ , q₂) = ⟦Unf-qelim-l φ ⟧ ρ
     in Sum.map₂ p₁ ∘′ p₂

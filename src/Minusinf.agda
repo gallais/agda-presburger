@@ -84,39 +84,47 @@ cooper-bound (:+1 [ ∣+1∣ ]*var0+ e :≤0) x ρ x≤lb = -,_ $ const $ begin
   x ℤ.+ ⟦t⟧ :+0               ≤⟨ ZProp.+-monoˡ-≤ (⟦ t ⟧e (:+0 ∷ ρ)) x≤lb ⟩
   ℤ.- (⟦t⟧ :+0) ℤ.+ (⟦t⟧ :+0) ≡⟨ ZProp.+-inverseˡ (⟦t⟧ :+0) ⟩
   :+0 ∎ where open ZProp.≤-Reasoning
-cooper-bound (:-1 [ ∣-1∣ ]*var0+ e :≤0) x ρ x≤lb = flip _,_ ⊥-elim $ ZProp.>→≰ $ begin
+cooper-bound (:-1 [ ∣-1∣ ]*var0+ e :≤0) x ρ x≤lb = flip _,_ ⊥-elim $ ZProp.>⇒≰ $ begin
   let ⟦t⟧ = λ x → ⟦ toExp (Lin-E 1) e ⟧e (x ∷ ρ) in
-  :+0                 <⟨ cooper-aux x (⟦t⟧ :+0) x≤lb ⟩
+  ℤ.+ 1               ≤⟨ cooper-aux x (⟦t⟧ :+0) x≤lb ⟩
   ℤ.- x ℤ.+ ⟦t⟧ :+0   ≡⟨ cong₂ ℤ._+_ (sym (ZProp.-1*n≡-n x)) (lin-ext₁ e :+0 x ρ) ⟩
-  :-1 ℤ.* x ℤ.+ ⟦t⟧ x ∎ where open ZProp.<-Reasoning
+  :-1 ℤ.* x ℤ.+ ⟦t⟧ x ∎ where open ZProp.≤-Reasoning
 cooper-bound (val k                :≤0) x ρ x≤lb = ↔-refl
 cooper-bound (varn p + e           :≤0) x ρ x≤lb = ↔-refl
 -- :≡0
 cooper-bound (:+1 [ ∣+1∣ ]*var0+ e :≡0) x ρ x≤lb = flip _,_ ⊥-elim $ flip ZProp.<-irrefl $ begin
   let ⟦t⟧ = λ x → ⟦ toExp (Lin-E 1) e ⟧e (x ∷ ρ) in
-  :+1 ℤ.* x ℤ.+ ⟦t⟧ x     ≡⟨ cong₂ ℤ._+_ (ZProp.*-identityˡ x) (lin-ext₁ e x :+0 ρ) ⟩
-  x ℤ.+ ⟦t⟧ :+0           <⟨ ZProp.+-monoˡ-< (⟦t⟧ :+0) {x} {ℤ.- ⟦t⟧ :+0} (ZProp.m≤pred[n]⇒m<n x≤lb) ⟩
-  ℤ.- ⟦t⟧ :+0 ℤ.+ ⟦t⟧ :+0 ≡⟨ ZProp.+-inverseˡ (⟦t⟧ :+0) ⟩
-  :+0 ∎ where open ZProp.<-Reasoning
+  ℤ.suc (:+1 ℤ.* x ℤ.+ ⟦t⟧ x)
+    ≡⟨ cong ℤ.suc $ cong₂ ℤ._+_ (ZProp.*-identityˡ x) (lin-ext₁ e x :+0 ρ) ⟩
+  ℤ.suc (x ℤ.+ ⟦t⟧ :+0)
+    ≤⟨ ZProp.+-monoˡ-< (⟦t⟧ :+0) {x} {ℤ.- ⟦t⟧ :+0} (ZProp.m≤pred[n]⇒m<n x≤lb) ⟩
+  ℤ.- ⟦t⟧ :+0 ℤ.+ ⟦t⟧ :+0
+    ≡⟨ ZProp.+-inverseˡ (⟦t⟧ :+0) ⟩
+  :+0
+    ∎ where open ZProp.≤-Reasoning
 cooper-bound (:-1 [ ∣-1∣ ]*var0+ e :≡0) x ρ x≤lb = flip _,_ ⊥-elim $ flip ZProp.>-irrefl $ begin
   let ⟦t⟧ = λ x → ⟦ toExp (Lin-E 1) e ⟧e (x ∷ ρ) in
-  :+0                 <⟨ cooper-aux x (⟦t⟧ :+0) x≤lb ⟩
+  ℤ.+ 1               ≤⟨ cooper-aux x (⟦t⟧ :+0) x≤lb ⟩
   ℤ.- x ℤ.+ ⟦t⟧ :+0   ≡⟨ cong₂ ℤ._+_ (sym (ZProp.-1*n≡-n x)) (lin-ext₁ e :+0 x ρ) ⟩
-  :-1 ℤ.* x ℤ.+ ⟦t⟧ x ∎ where open ZProp.<-Reasoning
+  :-1 ℤ.* x ℤ.+ ⟦t⟧ x ∎ where open ZProp.≤-Reasoning
 cooper-bound (val k                :≡0) x ρ x≤lb = ↔-refl
 cooper-bound (varn p + e           :≡0) x ρ x≤lb = ↔-refl
 -- :≢0
 cooper-bound (:+1 [ ∣+1∣ ]*var0+ e :≢0) x ρ x≤lb = -,_ $ const $ flip ZProp.<-irrefl $ begin
   let ⟦t⟧ = λ x → ⟦ toExp (Lin-E 1) e ⟧e (x ∷ ρ) in
-  :+1 ℤ.* x ℤ.+ ⟦t⟧ x     ≡⟨ cong₂ ℤ._+_ (ZProp.*-identityˡ x) (lin-ext₁ e x :+0 ρ) ⟩
-  x ℤ.+ ⟦t⟧ :+0           <⟨ ZProp.+-monoˡ-< (⟦t⟧ :+0) {x} {ℤ.- ⟦t⟧ :+0} (ZProp.m≤pred[n]⇒m<n x≤lb) ⟩
-  ℤ.- ⟦t⟧ :+0 ℤ.+ ⟦t⟧ :+0 ≡⟨ ZProp.+-inverseˡ (⟦t⟧ :+0) ⟩
-  :+0 ∎ where open ZProp.<-Reasoning
+  ℤ.suc (:+1 ℤ.* x ℤ.+ ⟦t⟧ x)
+    ≡⟨ cong ℤ.suc $ cong₂ ℤ._+_ (ZProp.*-identityˡ x) (lin-ext₁ e x :+0 ρ) ⟩
+  ℤ.suc (x ℤ.+ ⟦t⟧ :+0)
+    ≤⟨ ZProp.+-monoˡ-< (⟦t⟧ :+0) {x} {ℤ.- ⟦t⟧ :+0} (ZProp.m≤pred[n]⇒m<n x≤lb) ⟩
+  ℤ.- ⟦t⟧ :+0 ℤ.+ ⟦t⟧ :+0
+    ≡⟨ ZProp.+-inverseˡ (⟦t⟧ :+0) ⟩
+  :+0
+    ∎ where open ZProp.≤-Reasoning
 cooper-bound (:-1 [ ∣-1∣ ]*var0+ e :≢0) x ρ x≤lb = -,_ $ const $ flip ZProp.>-irrefl $ begin
   let ⟦t⟧ = λ x → ⟦ toExp (Lin-E 1) e ⟧e (x ∷ ρ) in
-  :+0                 <⟨ cooper-aux x (⟦t⟧ :+0) x≤lb ⟩
+  ℤ.+ 1               ≤⟨ cooper-aux x (⟦t⟧ :+0) x≤lb ⟩
   ℤ.- x ℤ.+ ⟦t⟧ :+0   ≡⟨ cong₂ ℤ._+_ (sym (ZProp.-1*n≡-n x)) (lin-ext₁ e :+0 x ρ) ⟩
-  :-1 ℤ.* x ℤ.+ ⟦t⟧ x ∎ where open ZProp.<-Reasoning
+  :-1 ℤ.* x ℤ.+ ⟦t⟧ x ∎ where open ZProp.≤-Reasoning
 cooper-bound (val k                :≢0) x ρ x≤lb = ↔-refl
 cooper-bound (varn p + e           :≢0) x ρ x≤lb = ↔-refl
 -- rest
@@ -137,10 +145,10 @@ cooper-bound (φ :∨ ψ) x ρ x≤lb = cooper-bound φ x ρ (ZProp.≤-trans x�
 
    lb    = bound φ ρ
    ψ     = proj₂ (var0⟶-∞ φ)
-   Σσ≠0  = proj₁ (lcm-:∣′ ψ)
+   Σσ≠0  = proj₁ (lcm-:∣ ψ)
    σ     = proj₁ Σσ≠0
    σ≠0   = proj₂ Σσ≠0
-   σ|ψ   = proj₂ (lcm-:∣′ ψ)
+   σ|ψ   = proj₂ (lcm-:∣ ψ)
    ∣σ∣≠0 = to≢0 σ≠0 ∘′ ZProp.∣n∣≡0⇒n≡0
    q     = ((bound φ ρ ℤ.- x) ZDM.div σ) {fromWitnessFalse ∣σ∣≠0}
    x′    = q ℤ.* σ ℤ.+ x

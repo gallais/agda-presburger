@@ -13,9 +13,8 @@ open import Cooper.UnfCooper-prop
 
 open import Data.Nat as ℕ using (ℕ)
 open import Data.Integer as ℤ using (ℤ)
-open import Data.Integer.Divisibility
 import Data.Integer.Properties as ZProp
-import Data.Integer.Divisibility.Properties as ZdivProp
+open import Data.Integer.Divisibility.Signed
 open import Data.Fin as Fin using (Fin)
 
 open import Data.Product
@@ -45,15 +44,15 @@ abstract
     σ∣var0   = σ :| :+1 :* var Fin.zero :+ val (ℤ.+ 0)
     σ∣var0-u = σ≠0 :| :+1 [ ∣+1∣ ]*var0+ val (ℤ.+ 0)
 
-    σ∣σ*x : ∀ x → σ ∣′ x ↔ ⟦ σ∣var0 ⟧ (x ∷ ρ)
+    σ∣σ*x : ∀ x → σ ∣ x ↔ ⟦ σ∣var0 ⟧ (x ∷ ρ)
     σ∣σ*x x = begin⟨ ↔-setoid ⟩
-      σ ∣′ x                   ≡⟨ cong (σ ∣′_) (P.sym (ZProp.*-identityˡ x)) ⟩
-      σ ∣′ :+1 ℤ.* x           ≡⟨ cong (σ ∣′_) (P.sym (ZProp.+-identityʳ (:+1 ℤ.* x))) ⟩
-      σ ∣′ :+1 ℤ.* x ℤ.+ ℤ.+ 0 ∎
+      σ ∣ x                   ≡⟨ cong (σ ∣_) (P.sym (ZProp.*-identityˡ x)) ⟩
+      σ ∣ :+1 ℤ.* x           ≡⟨ cong (σ ∣_) (P.sym (ZProp.+-identityʳ (:+1 ℤ.* x))) ⟩
+      σ ∣ :+1 ℤ.* x ℤ.+ ℤ.+ 0 ∎
 
     forward : ⟦ :∃ f ⟧ ρ → ⟦ :∃ σ∣var0 :∧ g ⟧ ρ
     forward (x , pr) = σ ℤ.* x
-                     , proj₁ (σ∣σ*x (σ ℤ.* x)) (ZdivProp.∣′m⇒∣′m*n x ZdivProp.∣′-refl)
+                     , proj₁ (σ∣σ*x (σ ℤ.* x)) (∣m⇒∣m*n x ∣-refl)
                      , proj₁ ⟦g∧ψ⟧ pr
 
     backward : ⟦ :∃ σ∣var0 :∧ g ⟧ ρ → ⟦ :∃ f ⟧ ρ
@@ -61,4 +60,4 @@ abstract
 
       σ|x   = proj₂ (σ∣σ*x x) σ∣var0
       k     = quotient σ|x
-      x≡σ*k = P.trans (_∣′_.equality σ|x) (ZProp.*-comm k σ)
+      x≡σ*k = P.trans (_∣_.equality σ|x) (ZProp.*-comm k σ)

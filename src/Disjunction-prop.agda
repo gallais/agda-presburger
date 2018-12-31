@@ -2,7 +2,7 @@ module Disjunction-prop where
 
 open import Data.Nat as ℕ using (ℕ)
 open import Data.Integer as ℤ using (ℤ)
-import Data.Integer.Divisibility as Zdiv
+open import Data.Integer.Divisibility.Signed
 open import Data.Fin as Fin using (Fin)
 open import Data.List as List
 open import Data.Sum as Sum
@@ -81,11 +81,11 @@ open import Normalization.Linearisation-prop
   ⟦ proj₁ (⟨ f /0⟩ (e :≡0)) ⟧ ρ  ∎ where open ≋-Reasoning
 ⟦⟨_/0⟩_⟧ {n} {p} {u} f (k≠0 :| e) ρ = begin⟨ ↔-setoid ⟩
   let k = toℤ k≠0; t = toExp (Lin-E 0) e; ρ′ = ℤ.+ 0 ∷ ρ in
-  k Zdiv.∣′ ⟦ t ⟧e (⟦ u ⟧e ρ′ ∷ ρ) ≡⟨ cong (k Zdiv.∣′_) (⟦⟨ f /0⟩-E⁻ e ⟧ ρ) ⟩
+  k ∣ ⟦ t ⟧e (⟦ u ⟧e ρ′ ∷ ρ) ≡⟨ cong (k ∣_) (⟦⟨ f /0⟩-E⁻ e ⟧ ρ) ⟩
   ⟦ proj₁ (⟨ f /0⟩ (k≠0 :| e)) ⟧ ρ ∎ where open ≋-Reasoning
 ⟦⟨_/0⟩_⟧ {n} {p} {u} f (k≠0 :|̸ e) ρ = ↔¬_ $′ begin⟨ ↔-setoid ⟩
   let k = toℤ k≠0; t = toExp (Lin-E 0) e; ρ′ = ℤ.+ 0 ∷ ρ in
-  k Zdiv.∣′ ⟦ t ⟧e (⟦ u ⟧e ρ′ ∷ ρ) ≡⟨ cong (k Zdiv.∣′_) (⟦⟨ f /0⟩-E⁻ e ⟧ ρ) ⟩
+  k ∣ ⟦ t ⟧e (⟦ u ⟧e ρ′ ∷ ρ) ≡⟨ cong (k ∣_) (⟦⟨ f /0⟩-E⁻ e ⟧ ρ) ⟩
   ⟦ proj₁ (⟨ f /0⟩ (k≠0 :| e)) ⟧ ρ ∎ where open ≋-Reasoning
 ⟦⟨ f /0⟩ φ :∧ ψ ⟧ ρ = ⟦⟨ f /0⟩ φ ⟧ ρ ↔× ⟦⟨ f /0⟩ ψ ⟧ ρ
 ⟦⟨ f /0⟩ φ :∨ ψ ⟧ ρ = ⟦⟨ f /0⟩ φ ⟧ ρ ↔⊎ ⟦⟨ f /0⟩ ψ ⟧ ρ

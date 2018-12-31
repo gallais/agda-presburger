@@ -14,7 +14,7 @@ import Data.Nat.Divisibility as Ndiv
 import Data.Nat.Properties as NProp
 open import Data.Integer as ℤ using (ℤ)
 import Data.Integer.Divisibility as Zdiv
-import Data.Integer.Divisibility.Properties as ZdivProp
+open import Data.Integer.Divisibility.Signed
 import Data.Integer.Properties as ZProp
 open import Data.Fin as Fin using (Fin)
 open import Data.Empty
@@ -56,7 +56,7 @@ open import Relation.Binary.PropositionalEquality
     ρ₂   = toℤ σ ℤ.* x ∷ ρ
 
     -- coefficient
-    k∣σ = ZdivProp.∣′m⇒∣m k∣′σ
+    k∣σ = ∣⇒∣ᵤ k∣′σ
     k′  = ℤ.+ Ndiv.quotient k∣σ
     s   = ℤ.sign k S.* ℤ.sign (toℤ σ)
 
@@ -138,19 +138,19 @@ open import Relation.Binary.SetoidReasoning
   ⟦ proj₁ (unit (e :≢0)) ⟧ _ ∎
 ⟦unit_⟧ {σ} (k≠0 :| e) ρ {x} = begin⟨ ↔-setoid ⟩
   let k = toℤ k≠0; t = toExp (Div-E σ) e; k' = unit-k e; k'k = ℤ.+ k' ℤ.* k in
-  k Zdiv.∣′ (⟦ t ⟧e (x ∷ ρ))
-    ≈⟨ ZdivProp.*-monoʳ-∣′ (ℤ.+ k')
-     , ZdivProp.*-cancelˡ-∣′ (ℤ.+ k') (to≢0 (unit-k≠0 e)) ⟩
-  k'k Zdiv.∣′ ℤ.pos k' ℤ.* (⟦ t ⟧e (x ∷ ρ))
-    ≡⟨ cong (k'k Zdiv.∣′_) (⟦unit-E e ⟧ ρ) ⟩
+  k ∣ (⟦ t ⟧e (x ∷ ρ))
+    ≈⟨ *-monoʳ-∣ (ℤ.+ k')
+     , *-cancelˡ-∣ (ℤ.+ k') (to≢0 (unit-k≠0 e)) ⟩
+  k'k ∣ ℤ.pos k' ℤ.* (⟦ t ⟧e (x ∷ ρ))
+    ≡⟨ cong (k'k ∣_) (⟦unit-E e ⟧ ρ) ⟩
   ⟦ proj₁ (unit (k≠0 :| e)) ⟧ (toℤ (proj₂ σ) ℤ.* x ∷ ρ) ∎
 ⟦unit_⟧ {σ} (k≠0 :|̸ e) ρ {x} = begin⟨ ↔-setoid ⟩
   let k = toℤ k≠0; t = toExp (Div-E σ) e; k' = unit-k e; k'k = ℤ.+ k' ℤ.* k in
-  ¬ (k Zdiv.∣′ (⟦ t ⟧e (x ∷ ρ)))
-    ≈⟨ ↔¬ (ZdivProp.*-monoʳ-∣′ (ℤ.+ k')
-          , ZdivProp.*-cancelˡ-∣′ (ℤ.+ k') (to≢0 (unit-k≠0 e))) ⟩
-  ¬ (k'k Zdiv.∣′ ℤ.pos k' ℤ.* (⟦ t ⟧e (x ∷ ρ)))
-    ≡⟨ cong (λ p → ¬ k'k Zdiv.∣′ p) (⟦unit-E e ⟧ ρ) ⟩
+  ¬ (k ∣ (⟦ t ⟧e (x ∷ ρ)))
+    ≈⟨ ↔¬ (*-monoʳ-∣ (ℤ.+ k')
+          , *-cancelˡ-∣ (ℤ.+ k') (to≢0 (unit-k≠0 e))) ⟩
+  ¬ (k'k ∣ ℤ.pos k' ℤ.* (⟦ t ⟧e (x ∷ ρ)))
+    ≡⟨ cong (λ p → ¬ k'k ∣ p) (⟦unit-E e ⟧ ρ) ⟩
   (¬ ⟦ proj₁ (unit (k≠0 :| e)) ⟧ (toℤ (proj₂ σ) ℤ.* x ∷ ρ)) ∎
 ⟦unit p :∧ q ⟧ ρ = ⟦unit p ⟧ ρ ↔× ⟦unit q ⟧ ρ
 ⟦unit p :∨ q ⟧ ρ = ⟦unit p ⟧ ρ ↔⊎ ⟦unit q ⟧ ρ
