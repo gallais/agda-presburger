@@ -10,4 +10,5 @@ if ! type "agda" > /dev/null || [ ! `agda -V | sed "s/[^2]*//"` = "2.5.1" ]; the
   cp libraries-2.6.0 $HOME/.agda/
   cd $HOME/.agda/
   git clone -b experimental https://github.com/agda/agda-stdlib --depth=1
+  cd -
 fi
