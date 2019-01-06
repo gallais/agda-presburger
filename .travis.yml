@@ -20,9 +20,9 @@ cache:
 
 install:
   - export PATH=$HOME/.cabal/bin:/opt/ghc/8.2.2/bin:/opt/cabal/2.0/bin:$PATH
-  - cd $HOME/agda-presburger/travis/
+  - cd $TRAVIS_BUILD_DIR/travis/
   - travis_wait 50 ./install_agda.sh
-  - cd $HOME/agda-presburger/
+  - cd $TRAVIS_BUILD_DIR
 
 script:
   - agda --safe src/Presburger.agda
