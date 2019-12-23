@@ -25,30 +25,29 @@ import Data.Fin.Properties as FProp
 import Data.List as List
 open import Data.Product as Prod
 open import Data.Vec
-open import Function
 
-open import Function
+open import Function hiding (_↔_; _⇔_)
 open import Relation.Nullary.Decidable
 open import Relation.Binary.PropositionalEquality
 import Relation.Binary.SetoidReasoning as ≋-Reasoning renaming (_≈⟨_⟩_ to _↔⟨_⟩_)
 
 
 lcm-:∣ : ∀ {n f} → Free0 {n} f → ∃ (λ k → All∣ k f)
-lcm-:∣ T        = (-, +[1+ 0 ]) , T
-lcm-:∣ F        = (-, +[1+ 0 ]) , F
-lcm-:∣ (e :≤0)  = (-, +[1+ 0 ]) , _ :≤0
-lcm-:∣ (e :≡0)  = (-, +[1+ 0 ]) , _ :≡0
-lcm-:∣ (e :≢0)  = (-, +[1+ 0 ]) , _ :≢0
+lcm-:∣ T        = (-, +[1+ 0 ]≠) , T
+lcm-:∣ F        = (-, +[1+ 0 ]≠) , F
+lcm-:∣ (e :≤0)  = (-, +[1+ 0 ]≠) , _ :≤0
+lcm-:∣ (e :≡0)  = (-, +[1+ 0 ]≠) , _ :≡0
+lcm-:∣ (e :≢0)  = (-, +[1+ 0 ]≠) , _ :≢0
 lcm-:∣ (k :| e) = (-, k) , ∣-refl [ k ]:| _
 lcm-:∣ (k :|̸ e) = (-, k) , ∣-refl [ k ]:|̸ _
 lcm-:∣ (φ :∧ ψ) =
   let ((k , k≠0) , φ′) = lcm-:∣ φ; ((l , l≠0) , ψ′) = lcm-:∣ ψ
-      (_ , lcm) = LCM.lcm ℤ.∣ k ∣ ℤ.∣ l ∣ in
+      (_ , lcm) = LCM.mkLCM ℤ.∣ k ∣ ℤ.∣ l ∣ in
   (-, lcm≠0 k≠0 l≠0) , ∣ᵤ⇒∣ (proj₁ (LCM.LCM.commonMultiple lcm)) ∣-All∣ φ′
                     :∧ ∣ᵤ⇒∣ (proj₂ (LCM.LCM.commonMultiple lcm)) ∣-All∣ ψ′
 lcm-:∣ (φ :∨ ψ) =
   let ((k , k≠0) , φ′) = lcm-:∣ φ; ((l , l≠0) , ψ′) = lcm-:∣ ψ
-      (_ , lcm) = LCM.lcm ℤ.∣ k ∣ ℤ.∣ l ∣ in
+      (_ , lcm) = LCM.mkLCM ℤ.∣ k ∣ ℤ.∣ l ∣ in
   (-, lcm≠0 k≠0 l≠0) , ∣ᵤ⇒∣ (proj₁ (LCM.LCM.commonMultiple lcm)) ∣-All∣ φ′
                     :∨ ∣ᵤ⇒∣ (proj₂ (LCM.LCM.commonMultiple lcm)) ∣-All∣ ψ′
 
@@ -102,13 +101,13 @@ lcm-:∣ (φ :∨ ψ) =
         divφ′ = m∣∣m∣ ∣-All∣ divφ
         q     = (x divℕ d) {d≢0}
         r<d   = ZDM.n%ℕd<d x d {d≢0}
-        r     = Fin.fromℕ≤ r<d
+        r     = Fin.fromℕ< r<d
         eq    : x ≡ q ℤ.* ℤ.+ d ℤ.+ ℤ.+ (Fin.toℕ r)
         eq    = let open ≡-Reasoning in begin
                 x
                   ≡⟨ ZDM.a≡a%ℕn+[a/ℕn]*n x d ⟩
                 ℤ.+ (x modℕ d) ℤ.+ x divℕ d ℤ.* ℤ.+ d
-                  ≡⟨ cong (λ r → ℤ.+ r ℤ.+ q ℤ.* ℤ.+ d) (sym (FProp.toℕ-fromℕ≤ r<d)) ⟩
+                  ≡⟨ cong (λ r → ℤ.+ r ℤ.+ q ℤ.* ℤ.+ d) (sym (FProp.toℕ-fromℕ< r<d)) ⟩
                 ℤ.+ Fin.toℕ r ℤ.+ x divℕ d ℤ.* ℤ.+ d
                   ≡⟨ ZProp.+-comm (ℤ.+ Fin.toℕ r) (q ℤ.* ℤ.+ d) ⟩
                 q ℤ.* ℤ.+ d ℤ.+ ℤ.+ Fin.toℕ r

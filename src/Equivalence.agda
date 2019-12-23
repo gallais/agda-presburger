@@ -5,7 +5,7 @@ module Equivalence where
 
 open import Data.Nat
 open import Data.Vec
-open import Function
+open import Function hiding (_↔_; _⇔_)
 open import Data.Empty
 open import Data.Product as Prod
 open import Data.Sum as Sum

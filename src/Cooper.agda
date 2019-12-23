@@ -88,7 +88,7 @@ step-cooper₁ {σ = σ , σ≠0} (:-1 [ ∣-1∣ ]*var0+ e :≤0) divφ x ρ ¬
 
 ... | no ¬le = ⊥-elim $ ¬H (j , here ⋯-x≡0) where
 
-   lt   = ZProp.≰⇒> ¬le
+   lt   = ZProp.≰⇒>′ ¬le
    t    = toExp (Lin-E 1) e
    -x   = ℤ.- x
    +∣σ∣ = ℤ.+ ℤ.∣ σ ∣
@@ -177,7 +177,7 @@ step-cooper₁ {σ = σ , _} (varn p + e        :≡0) divφ x ρ ¬H pr = begin
   ℤ.+ 0              ∎ where open ≡-Reasoning
 step-cooper₁ {σ = σ , σ≠0} (:+1 [ ∣+1∣ ]*var0+ e :≡0) divφ x ρ ¬H pr
   with ℤ.∣ σ ∣ | [∣ σ≠0 ∣≠0]
-... | ℕ.suc k | +[1+ k ] = ⊥-elim $′ ¬H (Fin.suc Fin.zero , here eq) where
+... | ℕ.suc k | +[1+ k ]≠ = ⊥-elim $′ ¬H (Fin.suc Fin.zero , here eq) where
 
   t    = toExp (Lin-E 1) e
   -e   = -E e
@@ -199,7 +199,7 @@ step-cooper₁ {σ = σ , σ≠0} (:+1 [ ∣+1∣ ]*var0+ e :≡0) divφ x ρ ¬
 
 step-cooper₁ {σ = σ , σ≠0} (:-1 [ ∣-1∣ ]*var0+ e :≡0) divφ x ρ ¬H pr
   with ℤ.∣ σ ∣ | [∣ σ≠0 ∣≠0]
-... | ℕ.suc k | +[1+ k ] = ⊥-elim $′ ¬H (Fin.suc Fin.zero , here eq) where
+... | ℕ.suc k | +[1+ k ]≠ = ⊥-elim $′ ¬H (Fin.suc Fin.zero , here eq) where
 
   t = toExp (Lin-E 1) e
   e-1 = e +E val :-1
@@ -361,14 +361,14 @@ cooper₁-simpl : ∀ {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣ σ (pro
                 Any (λ b → ⟦ f ⟧ (⟦ proj₁ b ⟧e (:+0 ∷ ρ) ℤ.+ ℤ.+ Fin.toℕ j ∷ ρ)) (bset φ)))
           → ∀ x → ⟦ f ⟧ (x ∷ ρ) → ∃ λ u → ⟦ proj₁ (var0⟶-∞ φ) ⟧ (u ∷ ρ)
 cooper₁-simpl {σ = σ , σ≠0} φ divφ ρ ¬H x pr with ℤcompare x (bound φ ρ)
-... | less    x<bd = -, proj₁ (cooper-bound φ x ρ (ZProp.<⇒≤ x<bd)) pr
+... | less    x<bd = -, proj₁ (cooper-bound φ x ρ (ZProp.<′⇒≤ x<bd)) pr
 ... | equal   x≡bd = -, proj₁ (cooper-bound φ x ρ (ZProp.≤-reflexive x≡bd)) pr
 ... | greater x>bd = -, proj₁ (cooper-bound φ x′ ρ x′≤bd) pr′ where
 
   bd     = bound φ ρ
   x-bd   = x ℤ.- bd
   0≤x-bd : :+0 ℤ.≤ x-bd
-  0≤x-bd = ZProp.m≤n⇒0≤n-m (ZProp.<⇒≤ x>bd)
+  0≤x-bd = ZProp.m≤n⇒0≤n-m (ZProp.<′⇒≤ x>bd)
   d      = ℤ.∣ σ ∣
   d≢0    = DEC.fromWitnessFalse $ to≢0 σ≠0 ∘′ ZProp.∣n∣≡0⇒n≡0
   q      = ℤ.suc ((x-bd ZDM.divℕ d) {d≢0})

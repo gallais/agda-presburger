@@ -55,8 +55,8 @@ abstract
   Lin-NNF (p :∨ q) = Lin-NNF p :∨ Lin-NNF q
 
   Unit-≠0 : ∀ {k} → ∣ k ∣≡1 → k ≠0
-  Unit-≠0 ∣+1∣ = +[1+ zero ]
-  Unit-≠0 ∣-1∣ = -[1+ zero ]
+  Unit-≠0 ∣+1∣ = +[1+ zero ]≠
+  Unit-≠0 ∣-1∣ = -[1+ zero ]≠
 
   Lin-E^wk : ∀ {n p₁ p₂} {e : exp n} → p₂ ℕ.≤ p₁ → Lin-E p₁ e → Lin-E p₂ e
   Lin-E^wk p₂≤p₁ (val k)               = val k

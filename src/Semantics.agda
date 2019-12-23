@@ -16,7 +16,7 @@ open import Representation
 
 ⟦_⟧e_ : ∀ {n} (y : exp n) (ρ : Vec ℤ n) → ℤ
 ⟦ val k ⟧e ρ = k
-⟦ var p ⟧e ρ = lookup p ρ
+⟦ var p ⟧e ρ = lookup ρ p
 ⟦ :- e ⟧e ρ = - ⟦ e ⟧e ρ
 ⟦ e₁ :+ e₂ ⟧e ρ = ⟦ e₁ ⟧e ρ ℤ.+ ⟦ e₂ ⟧e ρ
 ⟦ e₁ :- e₂ ⟧e ρ = ⟦ e₁ ⟧e ρ ℤ.- ⟦ e₂ ⟧e ρ
