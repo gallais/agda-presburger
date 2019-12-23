@@ -16,7 +16,7 @@ open import Data.Fin as Fin using (Fin)
 open import Data.Product as Prod
 open import Data.Sum
 open import Data.Empty
-open import Function
+open import Function hiding (_↔_; _⇔_)
 
 open import Relation.Nullary as RN using (Dec; yes; no)
 open import Relation.Nullary.Decidable
@@ -39,7 +39,7 @@ NNF-dec (p :∨ q)   ρ = (NNF-dec p ρ) ⊎-dec (NNF-dec q ρ)
 ⟦¬_⟧ : ∀ {n φ} (p : NNF {n} φ) → :¬ φ ⇔ proj₁ (¬ p)
 ⟦¬ T        ⟧ ρ = (_$ _) , ⊥-elim
 ⟦¬ F        ⟧ ρ = _ , const id
-⟦¬ t₁ :≤ t₂ ⟧ ρ = ZProp.≰⇒> , ZProp.>⇒≰
+⟦¬ t₁ :≤ t₂ ⟧ ρ = ZProp.≰⇒>′ , ZProp.>′⇒≰′
 ⟦¬ t₁ :≡ t₂ ⟧ ρ = ↔-refl
 ⟦¬ t₁ :≢ t₂ ⟧ ρ = decidable-stable (_ ℤ.≟ _) , _|>′_
 ⟦¬ k :| t   ⟧ ρ = ↔-refl
