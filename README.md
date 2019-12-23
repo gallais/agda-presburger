@@ -10,6 +10,6 @@ similar procedure in HOL.
 
 This development has been typechecked with:
 
-* Agda version 2.6.0 (under development, master branch)
-* the standard library v0.18 (under development, experimental branch)
+* Agda version 2.6.0.1
+* the standard library v1.2
 
