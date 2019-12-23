@@ -177,7 +177,7 @@ step-cooper₁ {σ = σ , _} (varn p + e        :≡0) divφ x ρ ¬H pr = begin
   ℤ.+ 0              ∎ where open ≡-Reasoning
 step-cooper₁ {σ = σ , σ≠0} (:+1 [ ∣+1∣ ]*var0+ e :≡0) divφ x ρ ¬H pr
   with ℤ.∣ σ ∣ | [∣ σ≠0 ∣≠0]
-... | ℕ.suc k | +[1+ k ] = ⊥-elim $′ ¬H (Fin.suc Fin.zero , here eq) where
+... | ℕ.suc k | +[1+ k ]≠ = ⊥-elim $′ ¬H (Fin.suc Fin.zero , here eq) where
 
   t    = toExp (Lin-E 1) e
   -e   = -E e
@@ -199,7 +199,7 @@ step-cooper₁ {σ = σ , σ≠0} (:+1 [ ∣+1∣ ]*var0+ e :≡0) divφ x ρ ¬
 
 step-cooper₁ {σ = σ , σ≠0} (:-1 [ ∣-1∣ ]*var0+ e :≡0) divφ x ρ ¬H pr
   with ℤ.∣ σ ∣ | [∣ σ≠0 ∣≠0]
-... | ℕ.suc k | +[1+ k ] = ⊥-elim $′ ¬H (Fin.suc Fin.zero , here eq) where
+... | ℕ.suc k | +[1+ k ]≠ = ⊥-elim $′ ¬H (Fin.suc Fin.zero , here eq) where
 
   t = toExp (Lin-E 1) e
   e-1 = e +E val :-1

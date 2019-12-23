@@ -62,7 +62,7 @@ k *E e with k ≠0?
 
 lin-E : ∀ {n} → exp n → ∃ (Lin-E {n} 0)
 lin-E (val k)  = -, val k
-lin-E (var p)  = -, +[1+ 0 ] *var p [ ℕ.z≤n ]+ val (ℤ.+ 0)
+lin-E (var p)  = -, +[1+ 0 ]≠ *var p [ ℕ.z≤n ]+ val (ℤ.+ 0)
 lin-E (:- e)   = -E (proj₂ (lin-E e))
 lin-E (e :+ f) = proj₂ (lin-E e) +E proj₂ (lin-E f)
 lin-E (e :- f) = proj₂ (lin-E e) +E proj₂ (-E proj₂ (lin-E f))

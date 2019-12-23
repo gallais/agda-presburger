@@ -34,11 +34,11 @@ import Relation.Binary.SetoidReasoning as ≋-Reasoning renaming (_≈⟨_⟩_ t
 
 
 lcm-:∣ : ∀ {n f} → Free0 {n} f → ∃ (λ k → All∣ k f)
-lcm-:∣ T        = (-, +[1+ 0 ]) , T
-lcm-:∣ F        = (-, +[1+ 0 ]) , F
-lcm-:∣ (e :≤0)  = (-, +[1+ 0 ]) , _ :≤0
-lcm-:∣ (e :≡0)  = (-, +[1+ 0 ]) , _ :≡0
-lcm-:∣ (e :≢0)  = (-, +[1+ 0 ]) , _ :≢0
+lcm-:∣ T        = (-, +[1+ 0 ]≠) , T
+lcm-:∣ F        = (-, +[1+ 0 ]≠) , F
+lcm-:∣ (e :≤0)  = (-, +[1+ 0 ]≠) , _ :≤0
+lcm-:∣ (e :≡0)  = (-, +[1+ 0 ]≠) , _ :≡0
+lcm-:∣ (e :≢0)  = (-, +[1+ 0 ]≠) , _ :≢0
 lcm-:∣ (k :| e) = (-, k) , ∣-refl [ k ]:| _
 lcm-:∣ (k :|̸ e) = (-, k) , ∣-refl [ k ]:|̸ _
 lcm-:∣ (φ :∧ ψ) =
