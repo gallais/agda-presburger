@@ -13,7 +13,7 @@ open import Function
 
 open import Data.Vec.Properties
 open import Data.Vec.Any as Any using (Any; here; there)
-open import Data.Vec.Any.Properties as AnyProp
+open import Data.Vec.Relation.Unary.Any.Properties as AnyProp
 open import Data.Vec.Membership.Propositional as Mem using (_∈_)
 import Data.Vec.Membership.Propositional.Properties as LMem
 

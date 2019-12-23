@@ -19,12 +19,12 @@ open import Normalization.Linearisation-prop
 import Data.List as List
 open import Data.List.Any as LAny using (Any; here; there)
 import Data.List.Membership.Propositional as LMem
-import Data.List.Any.Properties as LAnyProp
+import Data.List.Relation.Unary.Any.Properties as LAnyProp
 import Data.Vec.Any as VAny
 open import Data.Product as Prod
 open import Data.Sum as Sum
 open import Data.Vec as Vec using (Vec; []; _∷_)
-import Data.Vec.Any.Properties as VAnyProp
+import Data.Vec.Relation.Unary.Any.Properties as VAnyProp
 open import Data.Vec.Relation.Pointwise.Inductive as VecEq using (_∷_)
 
 open import Data.Nat as ℕ using (ℕ)
