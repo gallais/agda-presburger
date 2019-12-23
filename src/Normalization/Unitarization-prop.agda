@@ -22,7 +22,7 @@ open import Data.Product as Prod
 open import Data.Vec
 import Data.Sign as S
 import Data.Sign.Properties as SProp
-open import Function
+open import Function hiding (_↔_; _⇔_)
 
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality

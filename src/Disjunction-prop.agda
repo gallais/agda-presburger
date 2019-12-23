@@ -9,7 +9,7 @@ open import Data.Sum as Sum
 open import Data.Vec as Vec
 open import Data.Product as Prod
 open import Data.Empty
-open import Function
+open import Function hiding (Equivalence; _↔_; _⇔_)
 
 open import Data.Vec.Properties
 open import Data.Vec.Any as Any using (Any; here; there)

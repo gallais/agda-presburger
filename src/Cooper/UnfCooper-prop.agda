@@ -32,7 +32,7 @@ open import Data.Integer as ℤ using (ℤ)
 open import Data.Fin as Fin using (Fin)
 import Data.Fin.Properties as FProp
 
-open import Function
+open import Function hiding (_↔_; _⇔_)
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
 import Relation.Binary.SetoidReasoning as SR

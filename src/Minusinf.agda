@@ -9,7 +9,7 @@ import Data.Integer.DivMod as ZDM
 open import Data.Empty
 open import Data.Product as Prod
 open import Data.Vec as Vec
-open import Function
+open import Function hiding (Equivalence; _↔_; _⇔_)
 
 open import Relation.Nullary.Decidable
 open import Relation.Binary.PropositionalEquality

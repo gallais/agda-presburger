@@ -30,7 +30,7 @@ open import Data.Sum
 open import Data.Empty
 open import Data.Vec using (lookup)
 
-open import Function
+open import Function hiding (_↔_; _⇔_)
 
 open import Relation.Nullary
 open import Relation.Binary

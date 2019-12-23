@@ -21,7 +21,7 @@ open import Data.Product as Prod
 open import Data.Sum as Sum
 open import Data.Vec
 
-open import Function
+open import Function hiding (_↔_; _⇔_)
 open import Relation.Nullary as RN using (Dec; yes; no)
 open import Relation.Nullary.Negation
 import Relation.Nullary.Decidable as DEC

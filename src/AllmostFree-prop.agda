@@ -25,9 +25,8 @@ import Data.Fin.Properties as FProp
 import Data.List as List
 open import Data.Product as Prod
 open import Data.Vec
-open import Function
 
-open import Function
+open import Function hiding (_↔_; _⇔_)
 open import Relation.Nullary.Decidable
 open import Relation.Binary.PropositionalEquality
 import Relation.Binary.SetoidReasoning as ≋-Reasoning renaming (_≈⟨_⟩_ to _↔⟨_⟩_)
