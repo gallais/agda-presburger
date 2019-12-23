@@ -85,7 +85,7 @@ open import Relation.Binary
   let kp = ⟦ toℤ k :* var p ⟧e ρ; t = ⟦ toExp (Lin-E (ℕ.suc (Fin.toℕ p))) e ⟧e ρ
       lq = ⟦ toℤ l :* var q ⟧e ρ; u = ⟦ toExp (Lin-E (ℕ.suc (Fin.toℕ q))) f ⟧e ρ
       klq = ⟦ (toℤ k ℤ.+ toℤ l) :* var q ⟧e ρ
-      klq-eq = sym (ZProp.*-distribʳ-+ (lookup q ρ) (toℤ k) (toℤ l))
+      klq-eq = sym (ZProp.*-distribʳ-+ (lookup ρ q) (toℤ k) (toℤ l))
       (t+u , e+f) = e +E f in
   (kp ℤ.+ t) ℤ.+ (lq ℤ.+ u) ≡⟨ sym (ZProp.+-assoc (kp ℤ.+ t) lq u) ⟩
   kp ℤ.+ t ℤ.+ lq ℤ.+ u     ≡⟨ cong (ℤ._+ u) (ZProp.+-assoc kp t lq) ⟩
@@ -102,7 +102,7 @@ _≠0⟦*E_⟧_ : ∀ {n n₀ t k} (k≠0 : k ≠0) (e :  Lin-E {n} n₀ t) →
 k ≠0⟦*E val l               ⟧ ρ = refl
 k ≠0⟦*E l *var q [ prf ]+ f ⟧ ρ = begin
   let lq = ⟦ toℤ l :* var q ⟧e ρ; u = ⟦ toExp (Lin-E (ℕ.suc (Fin.toℕ q))) f ⟧e ρ
-      klq-eq = sym (ZProp.*-assoc (toℤ k) (toℤ l) (lookup q ρ)) in
+      klq-eq = sym (ZProp.*-assoc (toℤ k) (toℤ l) (lookup ρ q)) in
   toℤ k ℤ.* (lq ℤ.+ u)         ≡⟨ ZProp.*-distribˡ-+ (toℤ k) lq u ⟩
   toℤ k ℤ.* lq ℤ.+ toℤ k ℤ.* u ≡⟨ cong₂ ℤ._+_ klq-eq (k ≠0⟦*E f ⟧ ρ) ⟩
   _ ∎
@@ -115,9 +115,9 @@ k ⟦*E e ⟧ ρ with k ≠0?
 ⟦lin-E_⟧ : ∀ {n} (e : exp n) → e ⇔e proj₁ (lin-E e)
 ⟦lin-E val k  ⟧ ρ = refl
 ⟦lin-E var p  ⟧ ρ = begin
-  lookup p ρ                     ≡⟨ sym (ZProp.*-identityˡ (lookup p ρ)) ⟩
-  ℤ.+ 1 ℤ.* lookup p ρ           ≡⟨ sym (ZProp.+-identityʳ (ℤ.+ 1 ℤ.* lookup p ρ)) ⟩
-  ℤ.+ 1 ℤ.* lookup p ρ ℤ.+ ℤ.+ 0 ∎
+  lookup ρ p                     ≡⟨ sym (ZProp.*-identityˡ (lookup ρ p)) ⟩
+  ℤ.+ 1 ℤ.* lookup ρ p           ≡⟨ sym (ZProp.+-identityʳ (ℤ.+ 1 ℤ.* lookup ρ p)) ⟩
+  ℤ.+ 1 ℤ.* lookup ρ p ℤ.+ ℤ.+ 0 ∎
 ⟦lin-E :- e   ⟧ ρ = begin
   let (t' , e') = lin-E e in
   ⟦ :- e  ⟧e ρ                ≡⟨ cong ℤ.-_ (⟦lin-E e ⟧ ρ) ⟩

@@ -36,7 +36,7 @@ open import Normalization.Linearisation-prop
 ⟦lin-E⁻ val k                             ⟧ ρ = refl
 ⟦lin-E⁻ k *var Fin.zero  [ ()        ]+ e ⟧ ρ
 ⟦lin-E⁻ k *var Fin.suc p [ ℕ.s≤s prf ]+ e ⟧ ρ =
-  cong (ℤ._+_ (toℤ k ℤ.* Vec.lookup p ρ)) (⟦lin-E⁻ e ⟧ ρ)
+  cong (ℤ._+_ (toℤ k ℤ.* Vec.lookup ρ p)) (⟦lin-E⁻ e ⟧ ρ)
 
 ⟦⟨_/0⟩-E_⟧ : ∀ {n p p' u t} (f : Lin-E {ℕ.suc n} (ℕ.suc p) u) (e : Lin-E {ℕ.suc n} p' t) →
              ∀ ρ → ⟦ t ⟧e (⟦ u ⟧e (ℤ.+ 0 ∷ ρ) ∷ ρ) ≡ ⟦ proj₁ (⟨ f /0⟩-E e) ⟧e (ℤ.+ 0 ∷ ρ)
@@ -51,9 +51,9 @@ open import Normalization.Linearisation-prop
   ⟦ proj₁ (Lin-E^wk (ℕ.s≤s ℕ.z≤n) (proj₂ (k≠0 ≠0*E f)) +E e) ⟧e ρ′ ∎ where open ≡-Reasoning
 ⟦⟨_/0⟩-E_⟧ {n} {p} {p'} {u} f (k≠0 *var Fin.suc q [ prf ]+ e) ρ = begin
            let ⟦u⟧ = ⟦ u ⟧e (ℤ.+ 0 ∷ ρ); k = toℤ k≠0; r = toExp (Lin-E (2 ℕ.+ Fin.toℕ q)) e in
-  k ℤ.* Vec.lookup q ρ ℤ.+ ⟦ r ⟧e (⟦u⟧ ∷ ρ)
-    ≡⟨ cong (ℤ._+_ (k ℤ.* Vec.lookup q ρ)) (lin-ext₁ e ⟦u⟧ (ℤ.+ 0) ρ) ⟩
-  k ℤ.* Vec.lookup q ρ ℤ.+ (⟦ r ⟧e (ℤ.pos 0 ∷ ρ)) ∎ where open ≡-Reasoning
+  k ℤ.* Vec.lookup ρ q ℤ.+ ⟦ r ⟧e (⟦u⟧ ∷ ρ)
+    ≡⟨ cong (ℤ._+_ (k ℤ.* Vec.lookup ρ q)) (lin-ext₁ e ⟦u⟧ (ℤ.+ 0) ρ) ⟩
+  k ℤ.* Vec.lookup ρ q ℤ.+ (⟦ r ⟧e (ℤ.pos 0 ∷ ρ)) ∎ where open ≡-Reasoning
 
 ⟦⟨_/0⟩-E⁻_⟧ : ∀ {n p p' u t} (f : Lin-E {ℕ.suc n} (ℕ.suc p) u) (e : Lin-E {ℕ.suc n} p' t) →
               ∀ ρ → ⟦ t ⟧e (⟦ u ⟧e (ℤ.+ 0 ∷ ρ) ∷ ρ) ≡ ⟦ proj₁ (⟨ f /0⟩-E⁻ e) ⟧e ρ

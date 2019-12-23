@@ -43,12 +43,12 @@ lcm-:∣ (k :| e) = (-, k) , ∣-refl [ k ]:| _
 lcm-:∣ (k :|̸ e) = (-, k) , ∣-refl [ k ]:|̸ _
 lcm-:∣ (φ :∧ ψ) =
   let ((k , k≠0) , φ′) = lcm-:∣ φ; ((l , l≠0) , ψ′) = lcm-:∣ ψ
-      (_ , lcm) = LCM.lcm ℤ.∣ k ∣ ℤ.∣ l ∣ in
+      (_ , lcm) = LCM.mkLCM ℤ.∣ k ∣ ℤ.∣ l ∣ in
   (-, lcm≠0 k≠0 l≠0) , ∣ᵤ⇒∣ (proj₁ (LCM.LCM.commonMultiple lcm)) ∣-All∣ φ′
                     :∧ ∣ᵤ⇒∣ (proj₂ (LCM.LCM.commonMultiple lcm)) ∣-All∣ ψ′
 lcm-:∣ (φ :∨ ψ) =
   let ((k , k≠0) , φ′) = lcm-:∣ φ; ((l , l≠0) , ψ′) = lcm-:∣ ψ
-      (_ , lcm) = LCM.lcm ℤ.∣ k ∣ ℤ.∣ l ∣ in
+      (_ , lcm) = LCM.mkLCM ℤ.∣ k ∣ ℤ.∣ l ∣ in
   (-, lcm≠0 k≠0 l≠0) , ∣ᵤ⇒∣ (proj₁ (LCM.LCM.commonMultiple lcm)) ∣-All∣ φ′
                     :∨ ∣ᵤ⇒∣ (proj₂ (LCM.LCM.commonMultiple lcm)) ∣-All∣ ψ′
 
@@ -102,13 +102,13 @@ lcm-:∣ (φ :∨ ψ) =
         divφ′ = m∣∣m∣ ∣-All∣ divφ
         q     = (x divℕ d) {d≢0}
         r<d   = ZDM.n%ℕd<d x d {d≢0}
-        r     = Fin.fromℕ≤ r<d
+        r     = Fin.fromℕ< r<d
         eq    : x ≡ q ℤ.* ℤ.+ d ℤ.+ ℤ.+ (Fin.toℕ r)
         eq    = let open ≡-Reasoning in begin
                 x
                   ≡⟨ ZDM.a≡a%ℕn+[a/ℕn]*n x d ⟩
                 ℤ.+ (x modℕ d) ℤ.+ x divℕ d ℤ.* ℤ.+ d
-                  ≡⟨ cong (λ r → ℤ.+ r ℤ.+ q ℤ.* ℤ.+ d) (sym (FProp.toℕ-fromℕ≤ r<d)) ⟩
+                  ≡⟨ cong (λ r → ℤ.+ r ℤ.+ q ℤ.* ℤ.+ d) (sym (FProp.toℕ-fromℕ< r<d)) ⟩
                 ℤ.+ Fin.toℕ r ℤ.+ x divℕ d ℤ.* ℤ.+ d
                   ≡⟨ ZProp.+-comm (ℤ.+ Fin.toℕ r) (q ℤ.* ℤ.+ d) ⟩
                 q ℤ.* ℤ.+ d ℤ.+ ℤ.+ Fin.toℕ r

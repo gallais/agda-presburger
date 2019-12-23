@@ -30,13 +30,13 @@ div (k :| e) = Prod.map₂ (k :|_) (div-E e)
 div (k :|̸ e) = Prod.map₂ (k :|̸_) (div-E e)
 div (p :∧ q) =
   let (k , p')      = div p; (l , q') = div q
-      (d , prf)     = LCM.lcm ℤ.∣ proj₁ k ∣ ℤ.∣ proj₁ l ∣
+      (d , prf)     = LCM.mkLCM ℤ.∣ proj₁ k ∣ ℤ.∣ proj₁ l ∣
       (prfk , prfl) = LCM.LCM.commonMultiple prf
   in (ℤ.+ d , lcm≠0 (proj₂ k) (proj₂ l))
    , (∣ᵤ⇒∣ prfk ∣-Div p') :∧ (∣ᵤ⇒∣ prfl ∣-Div q')
 div (p :∨ q) =
   let (k , p') = div p; (l , q') = div q
-      (d , prf) = LCM.lcm ℤ.∣ proj₁ k ∣ ℤ.∣ proj₁ l ∣
+      (d , prf) = LCM.mkLCM ℤ.∣ proj₁ k ∣ ℤ.∣ proj₁ l ∣
       (prfk , prfl) = LCM.LCM.commonMultiple prf
   in (ℤ.+ d , lcm≠0 (proj₂ k) (proj₂ l))
    , (∣ᵤ⇒∣ prfk ∣-Div p') :∨ (∣ᵤ⇒∣ prfl ∣-Div q')

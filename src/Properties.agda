@@ -58,15 +58,15 @@ toℤ {k} _ = k
 [∣ +[1+ k ] ∣≠0] = +[1+ k ]
 [∣ -[1+ k ] ∣≠0] = +[1+ k ]
 
-lcm≠0 : ∀ {k l} → k ≠0 → l ≠0 → + proj₁ (LCM.lcm ∣ k ∣ ∣ l ∣) ≠0
+lcm≠0 : ∀ {k l} → k ≠0 → l ≠0 → + LCM.lcm ∣ k ∣ ∣ l ∣ ≠0
 lcm≠0 {k} {l} k≠0 l≠0 = from≢0 $ λ lcm≡0 →
-  let (gcd , prfgcd) = GCD.gcd ∣ k ∣ ∣ l ∣
-      (lcm , prflcm) = LCM.lcm ∣ k ∣ ∣ l ∣ in
+  let (gcd , prfgcd) = GCD.mkGCD ∣ k ∣ ∣ l ∣
+      (lcm , prflcm) = LCM.mkLCM ∣ k ∣ ∣ l ∣ in
   [ to≢0 [∣ k≠0 ∣≠0] ∘ cong ℤ.pos
   , to≢0 [∣ l≠0 ∣≠0] ∘ cong ℤ.pos
   ]′
-  $ NProp.i*j≡0⇒i≡0∨j≡0 ∣ k ∣ $ begin
-    ∣ k ∣ ℕ.* ∣ l ∣ ≡⟨ LCM.gcd*lcm prfgcd prflcm ⟩
+  $ NProp.m*n≡0⇒m≡0∨n≡0 ∣ k ∣ $ begin
+    ∣ k ∣ ℕ.* ∣ l ∣ ≡⟨  LCM.GCD*LCM prfgcd prflcm  ⟩
     gcd   ℕ.* lcm   ≡⟨ cong (gcd ℕ.*_) (ZProp.+-injective lcm≡0) ⟩
     gcd   ℕ.* 0     ≡⟨ NProp.*-zeroʳ gcd ⟩
     0               ∎
