@@ -12,14 +12,23 @@ open import Data.Empty
 open import Function hiding (Equivalence; _↔_; _⇔_)
 
 open import Data.Vec.Properties
-open import Data.Vec.Any as Any using (Any; here; there)
+open import Data.Vec.Relation.Unary.Any as Any using (Any; here; there)
 open import Data.Vec.Relation.Unary.Any.Properties as AnyProp
 open import Data.Vec.Membership.Propositional as Mem using (_∈_)
 import Data.Vec.Membership.Propositional.Properties as LMem
 
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
-import Relation.Binary.SetoidReasoning as ≋-Reasoning renaming (_≈⟨_⟩_ to _↔⟨_⟩_)
+open import Relation.Binary using (Setoid)
+import Relation.Binary.Reasoning.MultiSetoid as ≋-Reasoning
+
+module _ {c ℓ} {S : Setoid c ℓ} where
+
+  open Setoid S renaming (_≈_ to _≈_)
+
+  _↔⟨_⟩_ : ∀ x {y z} → x ≡ y → ≋-Reasoning.IsRelatedTo S y z → ≋-Reasoning.IsRelatedTo S x z
+  x ↔⟨ x≡y ⟩ y≡z = ≋-Reasoning.step-≡ x y≡z x≡y
+  infixr 2 _↔⟨_⟩_
 
 open import Representation
 open import Properties

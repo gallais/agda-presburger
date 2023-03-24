@@ -40,7 +40,7 @@ unit-k≠0 e = from≢0 (subst (λ k → ℤ.+ k ≢ ℤ.+ 0) (sym (unit-k-pos e
 
 -- Unitarization itself
 
-unit-E : ∀ {σ n e} → Div-E σ e → ∃ (Unit-E {n})
+unit-E : ∀ {σ n e} → Div-E σ {n} e → ∃ (Unit-E {n})
 unit-E (val k)                = -, val k
 unit-E (c*varn p + e)         = -, varn p + e
 unit-E {σ , σ≠0} (k [ k∣σ ]*var0+ e) =

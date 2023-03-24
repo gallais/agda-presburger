@@ -11,7 +11,7 @@ open import Data.Product as Prod
 open import Data.Sum as Sum
 open import Relation.Nullary
 open import Relation.Nullary.Negation
-open import Relation.Binary hiding (_⇒_)
+open import Relation.Binary hiding (_⇒_; _⇔_)
 open import Relation.Binary.PropositionalEquality using (_≡_ ; isEquivalence ; refl)
 
 open import Representation

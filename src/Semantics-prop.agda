@@ -7,7 +7,7 @@ open import Data.Fin as Fin using (Fin)
 open import Relation.Binary.PropositionalEquality
 
 open import Data.Vec
-import Data.Vec.Relation.Pointwise.Inductive as VecEq
+import Data.Vec.Relation.Binary.Pointwise.Inductive as VecEq
 open import Function
 
 open import Representation

@@ -33,7 +33,7 @@ open import Data.Vec using (lookup)
 open import Function hiding (_↔_; _⇔_)
 
 open import Relation.Nullary
-open import Relation.Binary
+open import Relation.Binary hiding (_⇔_)
 
 ⟦-E_⟧ : ∀ {n n₀ t} (e : Lin-E {n} n₀ t) → :- t ⇔e proj₁ (-E e)
 ⟦-E val k               ⟧ ρ = refl
@@ -52,6 +52,7 @@ open import Relation.Binary
 ... | inj₁ refl = ZProp.+-identityˡ _
 ... | inj₂ k≠0  = refl
 
+{-# TERMINATING #-}
 ⟦_⟧+E⟦_⟧ : ∀ {n n₀ t u} (e : Lin-E {n} n₀ t) (f : Lin-E {n} n₀ u) → t :+ u ⇔e proj₁ (e +E f)
 ⟦ val k               ⟧+E⟦ val l                ⟧ ρ = refl
 ⟦ val k               ⟧+E⟦ l *var q [ prf' ]+ f ⟧ ρ = begin
@@ -140,7 +141,15 @@ k ⟦*E e ⟧ ρ with k ≠0?
   k ℤ.* ⟦ t' ⟧e ρ               ≡⟨ k ⟦*E e' ⟧ ρ ⟩
   ⟦ proj₁ (lin-E (k :* e)) ⟧e ρ ∎
 
-open import Relation.Binary.SetoidReasoning renaming (_∎ to _✓; _≡⟨_⟩_ to _≋⟨_⟩_)
+open import Relation.Binary.Reasoning.MultiSetoid renaming (_∎ to _✓; step-≡ to ms-step-≡)
+
+module _ {c ℓ} {S : Setoid c ℓ} where
+
+  open Setoid S renaming (_≈_ to _≈_)
+
+  _≋⟨_⟩_ : ∀ x {y z} → x ≡ y → IsRelatedTo S y z → IsRelatedTo S x z
+  x ≋⟨ x≡y ⟩ y≡z = ms-step-≡ x y≡z x≡y
+  infixr 2 _≋⟨_⟩_
 
 ⟦lin_⟧ : ∀ {n φ} (p : NNF {n} φ) → φ ⇔ proj₁ (lin p)
 ⟦lin T        ⟧ ρ = ↔-refl

@@ -36,6 +36,7 @@ val k *var p [ prf ]+E e with k ≠0?
 ... | inj₂ k≠0 = -, k≠0 *var p [ prf ]+ e
 
 infixr 4 _+E_
+{-# TERMINATING #-}
 _+E_ : ∀ {n n₀ e f} → Lin-E {n} n₀ e → Lin-E {n} n₀ f → ∃ (Lin-E {n} n₀)
 val k               +E val l                = -, val (k ℤ.+ l)
 val k               +E l *var p [ prf ]+ f  = -, l *var p [ prf ]+ proj₂ (val k +E f)
