@@ -31,6 +31,7 @@ open import Data.Empty
 open import Data.Vec using (lookup)
 
 open import Function hiding (_↔_; _⇔_)
+open import Function.Base using (case_of_)
 
 open import Relation.Nullary
 open import Relation.Binary hiding (_⇔_)
@@ -52,51 +53,75 @@ open import Relation.Binary hiding (_⇔_)
 ... | inj₁ refl = ZProp.+-identityˡ _
 ... | inj₂ k≠0  = refl
 
-{-# TERMINATING #-}
-⟦_⟧+E⟦_⟧ : ∀ {n n₀ t u} (e : Lin-E {n} n₀ t) (f : Lin-E {n} n₀ u) → t :+ u ⇔e proj₁ (e +E f)
-⟦ val k               ⟧+E⟦ val l                ⟧ ρ = refl
-⟦ val k               ⟧+E⟦ l *var q [ prf' ]+ f ⟧ ρ = begin
-  let lq = ⟦ toℤ l :* var q ⟧e ρ; u = ⟦ toExp (Lin-E (ℕ.suc (Fin.toℕ q))) f ⟧e ρ in
-  k ℤ.+ (lq ℤ.+ u) ≡⟨ sym (ZProp.+-assoc k lq u) ⟩
-  k ℤ.+ lq ℤ.+ u   ≡⟨ cong (ℤ._+ u) (ZProp.+-comm k lq) ⟩
-  lq ℤ.+ k ℤ.+ u   ≡⟨ ZProp.+-assoc lq _ _ ⟩
-  lq ℤ.+ (k ℤ.+ u) ≡⟨ cong (ℤ._+_ lq) (⟦ val k ⟧+E⟦ f ⟧ ρ) ⟩
-  _ ∎
-⟦ k *var p [ prf ]+ e ⟧+E⟦ val l                ⟧ ρ = begin
-  let kp = ⟦ toℤ k :* var p ⟧e ρ; t = ⟦ toExp (Lin-E (ℕ.suc (Fin.toℕ p))) e ⟧e ρ in
-  kp ℤ.+ t ℤ.+ l   ≡⟨ ZProp.+-assoc kp _ _ ⟩
-  kp ℤ.+ (t ℤ.+ l) ≡⟨ cong (ℤ._+_ kp) (⟦ e ⟧+E⟦ val l ⟧ ρ) ⟩
-  _ ∎
-⟦ k *var p [ prf ]+ e ⟧+E⟦ l *var q [ prf' ]+ f ⟧ ρ with Fcompare p q
-... | less p<q = begin
-  let kp = ⟦ toℤ k :* var p ⟧e ρ; t = ⟦ toExp (Lin-E (ℕ.suc (Fin.toℕ p))) e ⟧e ρ
-      lqf = ⟦ toℤ l :* var q :+ toExp (Lin-E (ℕ.suc (Fin.toℕ q))) f ⟧e ρ in
-  (kp ℤ.+ t) ℤ.+ lqf ≡⟨ ZProp.+-assoc kp _ _ ⟩
-  kp ℤ.+ (t ℤ.+ lqf) ≡⟨ cong (ℤ._+_ kp) (⟦ e ⟧+E⟦ _ ⟧ ρ) ⟩
-  _ ∎
-... | greater p>q = begin
-  let kpe = ⟦ toℤ k :* var p :+ toExp (Lin-E (ℕ.suc (Fin.toℕ p))) e ⟧e ρ
-      lq  = ⟦ toℤ l :* var q ⟧e ρ; u = ⟦ toExp (Lin-E (ℕ.suc (Fin.toℕ q))) f ⟧e ρ in
-      kpe ℤ.+ (lq ℤ.+ u) ≡⟨ cong (ℤ._+_ kpe) (ZProp.+-comm lq u) ⟩
-      kpe ℤ.+ (u ℤ.+ lq) ≡⟨ sym (ZProp.+-assoc kpe _ _) ⟩
-      kpe ℤ.+ u ℤ.+ lq  ≡⟨ ZProp.+-comm (kpe ℤ.+ u) lq ⟩
-      lq ℤ.+ (kpe ℤ.+ u) ≡⟨ cong (ℤ._+_ lq) (⟦ k *var p [ _ ]+ e ⟧+E⟦ f ⟧ ρ) ⟩
-      _ ∎
-... | equal refl = begin
-  let kp = ⟦ toℤ k :* var p ⟧e ρ; t = ⟦ toExp (Lin-E (ℕ.suc (Fin.toℕ p))) e ⟧e ρ
-      lq = ⟦ toℤ l :* var q ⟧e ρ; u = ⟦ toExp (Lin-E (ℕ.suc (Fin.toℕ q))) f ⟧e ρ
-      klq = ⟦ (toℤ k ℤ.+ toℤ l) :* var q ⟧e ρ
-      klq-eq = sym (ZProp.*-distribʳ-+ (lookup ρ q) (toℤ k) (toℤ l))
-      (t+u , e+f) = e +E f in
-  (kp ℤ.+ t) ℤ.+ (lq ℤ.+ u) ≡⟨ sym (ZProp.+-assoc (kp ℤ.+ t) lq u) ⟩
-  kp ℤ.+ t ℤ.+ lq ℤ.+ u     ≡⟨ cong (ℤ._+ u) (ZProp.+-assoc kp t lq) ⟩
-  kp ℤ.+ (t ℤ.+ lq) ℤ.+ u   ≡⟨ cong (λ p → kp ℤ.+ p ℤ.+ u) (ZProp.+-comm t lq) ⟩
-  kp ℤ.+ (lq ℤ.+ t) ℤ.+ u   ≡⟨ cong (ℤ._+ u) (sym (ZProp.+-assoc kp lq t)) ⟩
-  (kp ℤ.+ lq) ℤ.+ t ℤ.+ u   ≡⟨ ZProp.+-assoc (kp ℤ.+ lq) t u ⟩
-  (kp ℤ.+ lq) ℤ.+ (t ℤ.+ u) ≡⟨ cong₂ ℤ._+_ klq-eq (⟦ e ⟧+E⟦ f ⟧ ρ) ⟩
-  klq ℤ.+ ⟦ t+u ⟧e ρ        ≡⟨ ⟦val (toℤ k ℤ.+ toℤ l) *var q [ prf ]+E e+f ⟧ ρ ⟩
-  ⟦ proj₁ (val (toℤ k ℤ.+ toℤ l) *var q [ prf ]+E e+f) ⟧e ρ ∎
+private
+  lin-e-size : ∀ {n n₀ e} → Lin-E {n} n₀ e → ℕ.ℕ
+  lin-e-size (val _) = 0
+  lin-e-size (_ *var _ [ _ ]+ e) = ℕ.suc (lin-e-size e)
 
+  data ℕ≡ : (n : ℕ.ℕ) → Set where
+    ℕ≡zero : ℕ≡ 0
+    ℕ≡suc : ∀ {n} → ℕ≡ n → ℕ≡ (ℕ.suc n)
+
+  makeℕ≡ : (n : ℕ.ℕ) → ℕ≡ n
+  makeℕ≡ ℕ.zero = ℕ≡zero
+  makeℕ≡ (ℕ.suc n) = ℕ≡suc (makeℕ≡ n)
+
+  -- This function is the same as ⟦_⟧+E⟦_⟧, except that it adds two additional
+  -- parameters (the lengths of the linear expressions e and f) in which it is
+  -- structurally recursive.
+  eaddsem : ∀ {n n₀ t u} (e : Lin-E {n} n₀ t) (f : Lin-E {n} n₀ u) → ℕ≡ (lin-e-size e) → ℕ≡ (lin-e-size f) → t :+ u ⇔e proj₁ (e +E f)
+  eaddsem (val k) (val l) _ _ ρ = refl
+  eaddsem (val k) (l *var q [ prf' ]+ f) esz (ℕ≡suc fsz) ρ = begin
+    let lq = ⟦ toℤ l :* var q ⟧e ρ; u = ⟦ toExp (Lin-E (ℕ.suc (Fin.toℕ q))) f ⟧e ρ in
+    k ℤ.+ (lq ℤ.+ u) ≡⟨ sym (ZProp.+-assoc k lq u) ⟩
+    k ℤ.+ lq ℤ.+ u   ≡⟨ cong (ℤ._+ u) (ZProp.+-comm k lq) ⟩
+    lq ℤ.+ k ℤ.+ u   ≡⟨ ZProp.+-assoc lq _ _ ⟩
+    lq ℤ.+ (k ℤ.+ u) ≡⟨ cong (ℤ._+_ lq) (eaddsem (val k) f esz fsz ρ) ⟩
+    _ ∎
+  eaddsem (k *var p [ prf ]+ e) (val l) (ℕ≡suc esz) fsz ρ = begin
+    let kp = ⟦ toℤ k :* var p ⟧e ρ; t = ⟦ toExp (Lin-E (ℕ.suc (Fin.toℕ p))) e ⟧e ρ in
+    kp ℤ.+ t ℤ.+ l   ≡⟨ ZProp.+-assoc kp _ _ ⟩
+    kp ℤ.+ (t ℤ.+ l) ≡⟨ cong (ℤ._+_ kp) (eaddsem e (val l) esz fsz ρ) ⟩
+    _ ∎
+  eaddsem (k *var p [ prf ]+ e) (l *var q [ prf' ]+ f) esz fsz ρ with Fcompare p q
+  ... | less p<q =
+    case esz of λ where
+      (ℕ≡suc esz') → begin
+        let kp = ⟦ toℤ k :* var p ⟧e ρ; t = ⟦ toExp (Lin-E (ℕ.suc (Fin.toℕ p))) e ⟧e ρ
+            lqf = ⟦ toℤ l :* var q :+ toExp (Lin-E (ℕ.suc (Fin.toℕ q))) f ⟧e ρ in
+        (kp ℤ.+ t) ℤ.+ lqf ≡⟨ ZProp.+-assoc kp _ _ ⟩
+        kp ℤ.+ (t ℤ.+ lqf) ≡⟨ cong (ℤ._+_ kp) (eaddsem e _ esz' fsz ρ) ⟩
+        _ ∎
+  ... | greater p>q =
+    case fsz of λ where
+      (ℕ≡suc fsz') → begin
+        let kpe = ⟦ toℤ k :* var p :+ toExp (Lin-E (ℕ.suc (Fin.toℕ p))) e ⟧e ρ
+            lq  = ⟦ toℤ l :* var q ⟧e ρ; u = ⟦ toExp (Lin-E (ℕ.suc (Fin.toℕ q))) f ⟧e ρ in
+            kpe ℤ.+ (lq ℤ.+ u) ≡⟨ cong (ℤ._+_ kpe) (ZProp.+-comm lq u) ⟩
+            kpe ℤ.+ (u ℤ.+ lq) ≡⟨ sym (ZProp.+-assoc kpe _ _) ⟩
+            kpe ℤ.+ u ℤ.+ lq  ≡⟨ ZProp.+-comm (kpe ℤ.+ u) lq ⟩
+            lq ℤ.+ (kpe ℤ.+ u) ≡⟨ cong (ℤ._+_ lq) (eaddsem (k *var p [ _ ]+ e) f esz fsz' ρ) ⟩
+            _ ∎
+  ... | equal refl =
+    case esz of λ where
+      (ℕ≡suc esz') → case fsz of λ where
+        (ℕ≡suc fsz') → begin
+          let kp = ⟦ toℤ k :* var p ⟧e ρ; t = ⟦ toExp (Lin-E (ℕ.suc (Fin.toℕ p))) e ⟧e ρ
+              lq = ⟦ toℤ l :* var q ⟧e ρ; u = ⟦ toExp (Lin-E (ℕ.suc (Fin.toℕ q))) f ⟧e ρ
+              klq = ⟦ (toℤ k ℤ.+ toℤ l) :* var q ⟧e ρ
+              klq-eq = sym (ZProp.*-distribʳ-+ (lookup ρ q) (toℤ k) (toℤ l))
+              (t+u , e+f) = e +E f in
+          (kp ℤ.+ t) ℤ.+ (lq ℤ.+ u) ≡⟨ sym (ZProp.+-assoc (kp ℤ.+ t) lq u) ⟩
+          kp ℤ.+ t ℤ.+ lq ℤ.+ u     ≡⟨ cong (ℤ._+ u) (ZProp.+-assoc kp t lq) ⟩
+          kp ℤ.+ (t ℤ.+ lq) ℤ.+ u   ≡⟨ cong (λ p → kp ℤ.+ p ℤ.+ u) (ZProp.+-comm t lq) ⟩
+          kp ℤ.+ (lq ℤ.+ t) ℤ.+ u   ≡⟨ cong (ℤ._+ u) (sym (ZProp.+-assoc kp lq t)) ⟩
+          (kp ℤ.+ lq) ℤ.+ t ℤ.+ u   ≡⟨ ZProp.+-assoc (kp ℤ.+ lq) t u ⟩
+          (kp ℤ.+ lq) ℤ.+ (t ℤ.+ u) ≡⟨ cong₂ ℤ._+_ klq-eq (eaddsem e f esz' fsz' ρ) ⟩
+          klq ℤ.+ ⟦ t+u ⟧e ρ        ≡⟨ ⟦val (toℤ k ℤ.+ toℤ l) *var q [ prf ]+E e+f ⟧ ρ ⟩
+          ⟦ proj₁ (val (toℤ k ℤ.+ toℤ l) *var q [ prf ]+E e+f) ⟧e ρ ∎
+
+⟦_⟧+E⟦_⟧ : ∀ {n n₀ t u} (e : Lin-E {n} n₀ t) (f : Lin-E {n} n₀ u) → t :+ u ⇔e proj₁ (e +E f)
+⟦ e ⟧+E⟦ f ⟧ = eaddsem e f (makeℕ≡ (lin-e-size e)) (makeℕ≡ (lin-e-size f))
 
 _≠0⟦*E_⟧_ : ∀ {n n₀ t k} (k≠0 : k ≠0) (e :  Lin-E {n} n₀ t) →
            (k :* t) ⇔e proj₁ (k≠0 ≠0*E e)
