@@ -17,15 +17,15 @@ open import Normalization.Linearisation
 open import Normalization.Linearisation-prop
 
 import Data.List as List
-open import Data.List.Any as LAny using (Any; here; there)
+open import Data.List.Relation.Unary.Any as LAny using (Any; here; there)
 import Data.List.Membership.Propositional as LMem
 import Data.List.Relation.Unary.Any.Properties as LAnyProp
-import Data.Vec.Any as VAny
+import Data.Vec.Relation.Unary.Any as VAny
 open import Data.Product as Prod
 open import Data.Sum as Sum
 open import Data.Vec as Vec using (Vec; []; _∷_)
 import Data.Vec.Relation.Unary.Any.Properties as VAnyProp
-open import Data.Vec.Relation.Pointwise.Inductive as VecEq using (_∷_)
+open import Data.Vec.Relation.Binary.Pointwise.Inductive as VecEq using (_∷_)
 
 open import Data.Nat as ℕ using (ℕ)
 open import Data.Integer as ℤ using (ℤ)
@@ -35,7 +35,7 @@ import Data.Fin.Properties as FProp
 open import Function hiding (_↔_; _⇔_)
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
-import Relation.Binary.SetoidReasoning as SR
+import Relation.Binary.Reasoning.MultiSetoid as SR
 
 ⟦Unf-qelim-l₁_⟧ : ∀ {n f} (φ : Unit {ℕ.suc n} f) ρ →
     ⟦ :∃ f ⟧ ρ ↔ ((∃ λ (j : Fin (jset φ)) → ⟦ proj₁ (Unf-qelim-l₁ φ j) ⟧ ρ)
@@ -98,7 +98,7 @@ import Relation.Binary.SetoidReasoning as SR
   backward : ∃ (λ j → ⟦ proj₁ (Unf-qelim-l₁ φ j) ⟧ ρ)
            ⊎ ⟦ :∃ proj₁ (var0⟶-∞ φ) ⟧ ρ → ⟦ :∃ f ⟧ ρ
   backward = [ (uncurry λ j pr → -, proj₂ (proj₂ (LMem.find (proj₁ (equiv j) pr))))
-             , ⟦var0⟶-∞ φ ⟧ ρ ∘ proj₂ ]′ where
+             , ⟦var0⟶-∞ φ ⟧ ρ ∘ proj₂ ]′
 
 ⟦Unf-qelim-l_⟧ : ∀ {n f} (φ : Unit {ℕ.suc n} f) →
                  :∃ f ⇔ (proj₁ (Unf-qelim-l φ) :∨ (:∃ proj₁ (var0⟶-∞ φ)))

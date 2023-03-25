@@ -130,10 +130,10 @@ cooper-bound (varn p + e           :≢0) x ρ x≤lb = ↔-refl
 -- rest
 cooper-bound (k :| e) x ρ x≤lb = ↔-refl
 cooper-bound (k :|̸ e) x ρ x≤lb = ↔-refl
-cooper-bound (φ :∧ ψ) x ρ x≤lb = cooper-bound φ x ρ (ZProp.≤-trans x≤lb (ZProp.m⊓n≤m _ _))
-                              ↔× cooper-bound ψ x ρ (ZProp.≤-trans x≤lb (ZProp.m⊓n≤n _ _))
-cooper-bound (φ :∨ ψ) x ρ x≤lb = cooper-bound φ x ρ (ZProp.≤-trans x≤lb (ZProp.m⊓n≤m _ _))
-                      ↔⊎ cooper-bound ψ x ρ (ZProp.≤-trans x≤lb (ZProp.m⊓n≤n _ _))
+cooper-bound (φ :∧ ψ) x ρ x≤lb = cooper-bound φ x ρ (ZProp.≤-trans x≤lb (ZProp.i⊓j≤i _ _))
+                              ↔× cooper-bound ψ x ρ (ZProp.≤-trans x≤lb (ZProp.i⊓j≤j _ _))
+cooper-bound (φ :∨ ψ) x ρ x≤lb = cooper-bound φ x ρ (ZProp.≤-trans x≤lb (ZProp.i⊓j≤i _ _))
+                      ↔⊎ cooper-bound ψ x ρ (ZProp.≤-trans x≤lb (ZProp.i⊓j≤j _ _))
 
 
 ⟦var0⟶-∞_⟧ : ∀ {n f} (φ : Unit {ℕ.suc n} f) {x} ρ →

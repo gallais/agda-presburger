@@ -39,11 +39,11 @@ bounded⇒interval {v} {x} {y} x≤v v≤y = k , x+k≡v where
     size                  ≡⟨ sym (ZProp.0≤n⇒+∣n∣≡n 0≤size) ⟩
     ℤ.+ ℤ.∣ y ℤ.+ ℤ.- x ∣ ∎ where open ZProp.≤-Reasoning
 
-  k = Fin.fromℕ≤ ∣dist∣<1+size
+  k = Fin.fromℕ< ∣dist∣<1+size
 
   x+k≡v : x ℤ.+ ℤ.+ Fin.toℕ k ≡ v
   x+k≡v = begin
-    x ℤ.+ ℤ.+ (Fin.toℕ k) ≡⟨ cong (ℤ._+_ x ∘′ ℤ.+_) (FProp.toℕ-fromℕ≤ ∣dist∣<1+size) ⟩
+    x ℤ.+ ℤ.+ (Fin.toℕ k) ≡⟨ cong (ℤ._+_ x ∘′ ℤ.+_) (FProp.toℕ-fromℕ< ∣dist∣<1+size) ⟩
     x ℤ.+ ℤ.+ ℤ.∣ dist ∣  ≡⟨ cong (ℤ._+_ x) (ZProp.0≤n⇒+∣n∣≡n 0≤dist) ⟩
     x ℤ.+ dist            ≡⟨ ZProp.+-comm x (v ℤ.- x) ⟩
     v ℤ.- x ℤ.+ x         ≡⟨ ZProp.+-assoc v (ℤ.- x) x ⟩

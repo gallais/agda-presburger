@@ -23,7 +23,7 @@ open import Relation.Nullary.Decidable
 open import Relation.Nullary.Negation
 open import Relation.Nullary.Product
 open import Relation.Nullary.Sum
-open import Relation.Binary.SetoidReasoning
+open import Relation.Binary.Reasoning.MultiSetoid
 
 NNF-dec : ∀ {n φ} → NNF {n} φ → ∀ ρ → Dec (⟦ φ ⟧ ρ)
 NNF-dec T          ρ = yes _

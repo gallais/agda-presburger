@@ -19,16 +19,7 @@ import Data.Vec.Membership.Propositional.Properties as LMem
 
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
-open import Relation.Binary using (Setoid)
 import Relation.Binary.Reasoning.MultiSetoid as ≋-Reasoning
-
-module _ {c ℓ} {S : Setoid c ℓ} where
-
-  open Setoid S renaming (_≈_ to _≈_)
-
-  _↔⟨_⟩_ : ∀ x {y z} → x ≡ y → ≋-Reasoning.IsRelatedTo S y z → ≋-Reasoning.IsRelatedTo S x z
-  x ↔⟨ x≡y ⟩ y≡z = ≋-Reasoning.step-≡ x y≡z x≡y
-  infixr 2 _↔⟨_⟩_
 
 open import Representation
 open import Properties
@@ -39,6 +30,7 @@ open import Equivalence
 open import Disjunction
 open import Normalization.Linearisation
 open import Normalization.Linearisation-prop
+open import StdlibCompat
 
 ⟦lin-E⁻_⟧ : ∀ {n p t} (e : Lin-E {ℕ.suc n} (ℕ.suc p) t) ρ {x} →
             ⟦ t ⟧e (x ∷ ρ) ≡ ⟦ proj₁ (lin-E⁻ e) ⟧e ρ

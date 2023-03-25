@@ -16,17 +16,20 @@ open import Data.Nat as ℕ using (ℕ)
 open import Data.Integer as ℤ using (ℤ)
 open import Data.Vec
 open import Data.Product
-open import Relation.Binary.SetoidReasoning
+open import Relation.Binary.Reasoning.MultiSetoid
 
 abstract
+
+  private
+    module LocalDefs {n : ℕ} {f2 : form (ℕ.suc n)} (φ : QFree {ℕ.suc n} f2) where
+      f     = toForm QFree φ
+      g∧ψ   = nnf φ
+      g     = proj₁ g∧ψ
+      ψ     = proj₂ g∧ψ
 
   ⟦qelim_⟧ : ∀ {n f} (φ : QFree {ℕ.suc n} f) → :∃ f ⇔ proj₁ (qelim φ)
   ⟦qelim φ ⟧ ρ = begin⟨ ↔-setoid ⟩
     ⟦ :∃ f ⟧ ρ            ≈⟨ ↔Σ (λ x → ⟦nnf φ ⟧ (x ∷ ρ)) ⟩
     ⟦ :∃ g ⟧ ρ            ≈⟨ ⟦Nnf-qelim ψ ⟧ ρ ⟩
     ⟦ proj₁ (qelim φ) ⟧ ρ ∎ where
-
-    f     = toForm QFree φ
-    g∧ψ   = nnf φ
-    g     = proj₁ g∧ψ
-    ψ     = proj₂ g∧ψ
+    open LocalDefs φ

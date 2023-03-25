@@ -17,7 +17,7 @@ open import Data.Integer as ℤ using (ℤ)
 open import Data.Vec using (_∷_)
 open import Data.Product as Prod
 
-open import Relation.Binary.SetoidReasoning
+open import Relation.Binary.Reasoning.MultiSetoid
 
 ⟦Nnf-qelim_⟧ : ∀ {n f} (φ : NNF {ℕ.suc n} f) → :∃ f ⇔ proj₁ (Nnf-qelim φ)
 ⟦Nnf-qelim φ ⟧ ρ = begin⟨ ↔-setoid ⟩
