@@ -99,7 +99,7 @@ open import Relation.Binary.PropositionalEquality
     eq : k′ ℤ.* k ≡ (s ℤ.◃ 1) ℤ.* toℤ σ
     eq = ZProp.◃-≡ sign-eq ∣eq∣
 
-open import Relation.Binary.SetoidReasoning
+open import Relation.Binary.Reasoning.MultiSetoid
 
 ⟦unit_⟧ : ∀ {σ n φ} (p : Div {ℕ.suc n} σ φ) → ∀ ρ {x} →
           ⟦ φ ⟧ (x ∷ ρ) ↔ ⟦ proj₁ (unit p) ⟧ (toℤ (proj₂ σ) ℤ.* x ∷ ρ)

@@ -60,8 +60,9 @@ abstract
 
   Lin-E^wk : ∀ {n p₁ p₂} {e : exp n} → p₂ ℕ.≤ p₁ → Lin-E p₁ e → Lin-E p₂ e
   Lin-E^wk p₂≤p₁ (val k)               = val k
-  Lin-E^wk p₂≤p₁ (k *var p [ prf ]+ e) = k *var p [ prf′ ]+ e
-    where prf′ = ≤-trans p₂≤p₁ prf
+  Lin-E^wk {p₂ = p₂} p₂≤p₁ (k *var p [ prf ]+ e) = k *var p [ prf′ ]+ e
+    where prf′ : p₂ ℕ.≤ toℕ p
+          prf′ = ≤-trans p₂≤p₁ prf
 
   Unit-Lin-E : ∀ {n} {e : exp n} → Unit-E e → Lin-E 0 e
   Unit-Lin-E (val k)             = val k

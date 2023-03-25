@@ -15,8 +15,8 @@ open import Interval
 open import Comparisons
 
 open import Data.List.Base using (List; []; _∷_)
-open import Data.List.Any as Any using (Any; here; there)
-open import Data.List.Any.Properties
+open import Data.List.Relation.Unary.Any as Any using (Any; here; there)
+open import Data.List.Relation.Unary.Any.Properties
 
 open import Data.Nat as ℕ using (ℕ)
 import Data.Nat.Properties as NProp
@@ -317,7 +317,7 @@ step-cooper₁ (φ :∨ ψ) (divφ :∨ divψ) x ρ ¬H = Sum.map
 
 cooper₁-dec : ∀ {m} n (L : List (∃ (Lin-E {m} 1))) →
   ∀ ρ x → Dec (∃ λ (j : Fin n) → Any (λ b → x ≡ ⟦ proj₁ b ⟧e ρ ℤ.+ ℤ.+ Fin.toℕ j) L)
-cooper₁-dec n L ρ x = FProp.any? $′ λ j → Any.any (λ b → x ℤ.≟ _) L
+cooper₁-dec n L ρ x = FProp.any? $′ λ j → Any.any? (λ b → x ℤ.≟ _) L
 
 cooper₁ : ∀ {n f σ} (φ : Unit {ℕ.suc n} f) (divφ : All∣ σ (proj₁ $ var0⟶-∞ φ)) → ∀ ρ →
           let ∣σ∣ = ℤ.∣ proj₁ σ ∣ in
@@ -346,7 +346,7 @@ cooper₁s (ℕ.suc k) {f = f} {σ} φ divφ ρ ¬H x pr = subst (λ x → ⟦ f
   eq : x ℤ.- ℤ.+ ∣σ∣ ℤ.- ℤ.+ k ℤ.* ℤ.+ ∣σ∣ ≡ x ℤ.- ℤ.+ (ℕ.suc k) ℤ.* ℤ.+ ∣σ∣
   eq = sym $ begin
     x ℤ.- ℤ.+ (ℕ.suc k) ℤ.* ℤ.+ ∣σ∣
-      ≡⟨ cong (ℤ._-_ x) (ZProp.[1+m]*n≡n+m*n (ℤ.+ k) (ℤ.+ ∣σ∣)) ⟩
+      ≡⟨ cong (ℤ._-_ x) (ZProp.suc-* (ℤ.+ k) (ℤ.+ ∣σ∣)) ⟩
     x ℤ.- (ℤ.+ ∣σ∣ ℤ.+ ℤ.+ k ℤ.* ℤ.+ ∣σ∣)
       ≡⟨ cong (ℤ._+_ x) (ZProp.neg-distrib-+ (ℤ.+ ∣σ∣) (ℤ.+ k ℤ.* ℤ.+ ∣σ∣)) ⟩
     x ℤ.+ (ℤ.- ℤ.+ ∣σ∣ ℤ.+ ℤ.- (ℤ.+ k ℤ.* ℤ.+ ∣σ∣))
@@ -380,7 +380,7 @@ cooper₁-simpl {σ = σ , σ≠0} φ divφ ρ ¬H x pr with ℤcompare x (bound
     x ℤ.- (ℤ.+ ℤ.∣ q ∣ ℤ.* ℤ.+ d)
       ≡⟨ cong (λ m → x ℤ.- (m ℤ.* ℤ.+ d)) +∣q∣≡q ⟩
     x ℤ.- q ℤ.* ℤ.+ d
-      ≤⟨ ZProp.+-monoʳ-≤ x (ZProp.neg-mono-≤-≥ (ZProp.<⇒≤ (ZDM.n<s[n/ℕd]*d x-bd d))) ⟩
+      ≤⟨ ZProp.+-monoʳ-≤ x (ZProp.neg-mono-≤ (ZProp.<⇒≤ (ZDM.n<s[n/ℕd]*d x-bd d))) ⟩
     x ℤ.+ ℤ.- x-bd
       ≡⟨ cong (ℤ._+_ x) (ZProp.neg-distrib-+ x (ℤ.- bd)) ⟩
     x ℤ.+ (ℤ.- x ℤ.+ ℤ.- (ℤ.- bd))

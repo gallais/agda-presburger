@@ -29,8 +29,9 @@ open import Data.Vec
 open import Function hiding (_↔_; _⇔_)
 open import Relation.Nullary.Decidable
 open import Relation.Binary.PropositionalEquality
-import Relation.Binary.SetoidReasoning as ≋-Reasoning renaming (_≈⟨_⟩_ to _↔⟨_⟩_)
+import Relation.Binary.Reasoning.MultiSetoid as ≋-Reasoning
 
+open import StdlibCompat
 
 lcm-:∣ : ∀ {n f} → Free0 {n} f → ∃ (λ k → All∣ k f)
 lcm-:∣ T        = (-, +[1+ 0 ]≠) , T

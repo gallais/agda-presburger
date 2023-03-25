@@ -12,14 +12,14 @@ open import Data.Empty
 open import Function hiding (Equivalence; _↔_; _⇔_)
 
 open import Data.Vec.Properties
-open import Data.Vec.Any as Any using (Any; here; there)
+open import Data.Vec.Relation.Unary.Any as Any using (Any; here; there)
 open import Data.Vec.Relation.Unary.Any.Properties as AnyProp
 open import Data.Vec.Membership.Propositional as Mem using (_∈_)
 import Data.Vec.Membership.Propositional.Properties as LMem
 
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
-import Relation.Binary.SetoidReasoning as ≋-Reasoning renaming (_≈⟨_⟩_ to _↔⟨_⟩_)
+import Relation.Binary.Reasoning.MultiSetoid as ≋-Reasoning
 
 open import Representation
 open import Properties
@@ -30,6 +30,7 @@ open import Equivalence
 open import Disjunction
 open import Normalization.Linearisation
 open import Normalization.Linearisation-prop
+open import StdlibCompat
 
 ⟦lin-E⁻_⟧ : ∀ {n p t} (e : Lin-E {ℕ.suc n} (ℕ.suc p) t) ρ {x} →
             ⟦ t ⟧e (x ∷ ρ) ≡ ⟦ proj₁ (lin-E⁻ e) ⟧e ρ

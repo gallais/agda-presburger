@@ -26,7 +26,7 @@ open import Relation.Nullary as RN using (Dec; yes; no)
 open import Relation.Nullary.Negation
 import Relation.Nullary.Decidable as DEC
 open import Relation.Binary.PropositionalEquality
-open import Relation.Binary.SetoidReasoning
+open import Relation.Binary.Reasoning.MultiSetoid
 
 
 Qfree-dec : ∀ {n f} (φ : QFree {n} f) ρ → Dec (⟦ f ⟧ ρ)
